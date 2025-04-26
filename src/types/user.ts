@@ -6,6 +6,9 @@ export interface User{
     role: string;
     bio: string;
     profilePicture: string;
+    referralCode: string;
+    point: number;
+    expirationDate: Date | null |string;
     createdAt: Date;
     updatedAt: Date;
 }
