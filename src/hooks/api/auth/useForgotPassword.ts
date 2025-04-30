@@ -1,5 +1,5 @@
 "use client";
-import { axiosInstance } from "@/lib/axios";
+import axiosInstance  from "@/lib/axios";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
@@ -22,7 +22,7 @@ const useForgotPassword = () => {
     },
     onSuccess: () => {
       toast.success("Email sent successfully");
-      router.push("/auth/login");
+      router.push("/login");
     },
     onError: (error: AxiosError<any>) => {
       toast.error(error.response?.data.message);

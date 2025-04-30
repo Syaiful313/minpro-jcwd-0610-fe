@@ -3,7 +3,7 @@ import useAxios from "@/hooks/useAxios";
 import { User } from "@/types/user";
 import { useQuery } from "@tanstack/react-query";
 
-const useGetProfile = (token: string) => {
+const useGetProfile = () => {
   const { axiosInstance } = useAxios();
   return useQuery({
     queryKey: ["profiles"],
@@ -11,7 +11,6 @@ const useGetProfile = (token: string) => {
       const { data } = await axiosInstance.get<User>("/profiles");
       return data;
     },
-    enabled: !!token,
   });
 };
 

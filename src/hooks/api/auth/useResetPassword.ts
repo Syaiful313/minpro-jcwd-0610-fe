@@ -27,7 +27,7 @@ const useResetPassword = (token: string) => {
     },
     onSuccess: () => {
       toast.success("Reset password successfully");
-      router.push("/auth/login");
+      router.push("/login");
     },
     onError: (error: AxiosError<any>) => {
       toast.error(error.response?.data.message || error.response?.data);

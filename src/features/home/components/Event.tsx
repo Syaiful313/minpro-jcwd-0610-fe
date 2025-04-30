@@ -7,8 +7,7 @@ import { LocationFilter } from "@/components/LocationFilter";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import useGetEvents from "@/hooks/api/event/useGetEvents";
-import { Event } from "@/lib/types";
-import { IEvent } from "@/types/Event";
+import { Event } from "@/types/event";
 import Link from "next/link";
 import React from "react";
 
@@ -19,7 +18,7 @@ export default function HeroSectionEvent() {
 
   
 
-  function renderContent(featuredEvents: IEvent []) {
+  function renderContent(featuredEvents: Event []) {
     console.log("EventCard")
     return (
       

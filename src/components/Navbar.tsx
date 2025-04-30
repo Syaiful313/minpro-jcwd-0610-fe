@@ -1,21 +1,17 @@
 "use client";
-import { useAppSelector } from "@/redux/hooks";
-import { logoutAction } from "@/redux/slices/userSlice";
+import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
-import { useDispatch } from "react-redux";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 export default function Navbar() {
-  const router =useRouter()
-  const dispatch = useDispatch();
-  const user = useAppSelector((state) => state.user);
+  const { data } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const user = data?.user;
+  const isOrganizer = user?.role === "ORGANIZER";
 
   const logout = () => {
-    localStorage.removeItem("token");
-    dispatch(logoutAction());
-    router.push("/")
+    signOut();
   };
 
   const toggleMenu = () => {
@@ -23,17 +19,17 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-gray-800 shadow-lg">
+    <nav className="bg-[#222831] shadow-lg">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between">
           <div className="flex items-center">
-            <Link href="/" className="text-xl font-bold text-white">
-              Event
+            <Link href="/" className="text-2xl font-bold font-serif text-white">
+              EventNesia
             </Link>
           </div>
 
           {/* Desktop menu */}
-          <div className="hidden items-center space-x-4 md:flex cursor-pointer">
+          <div className="hidden cursor-pointer items-center space-x-4 md:flex">
             <Link
               href="/"
               className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
@@ -46,8 +42,16 @@ export default function Navbar() {
             >
               Explore
             </Link>
-            {user.id ? (
+            {user?.id ? (
               <>
+                {isOrganizer && (
+                  <Link
+                    href="/dashboard"
+                    className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
+                  >
+                    Dashboard
+                  </Link>
+                )}
                 <Link
                   href="/profile"
                   className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
@@ -56,15 +60,22 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={logout}
-                  className="rounded-md bg-blue-500 px-3 py-2 text-sm font-medium text-white"
+                  className="rounded-md bg-[#393E46] px-3 py-2 text-sm font-medium text-white"
                 >
                   Logout
                 </button>
+                <Avatar className="h-8 w-8 rounded-lg grayscale">
+                <AvatarImage
+                  src={user?.profilePicture}
+                  alt={user?.fullName}
+                />
+                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+              </Avatar>
               </>
             ) : (
               <Link
-                href="/auth/login"
-                className="rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white "
+                href="/login"
+                className="rounded-md bg-[#393E46] px-4 py-2 text-sm font-medium text-white"
               >
                 Sign in
               </Link>
@@ -125,8 +136,16 @@ export default function Navbar() {
           >
             Home
           </Link>
-          {user.id ? (
+          {user?.id ? (
             <>
+              {isOrganizer && (
+                <Link
+                  href="/dashboard"
+                  className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:text-white"
+                >
+                  Dashboard
+                </Link>
+              )}
               <Link
                 href="/profile"
                 className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:text-white"
@@ -135,17 +154,14 @@ export default function Navbar() {
               </Link>
               <button
                 onClick={logout}
-                className="block w-full bg-blue-500 rounded-md px-3 py-2 text-left text-base font-medium text-gray-300 hover:text-white"
+                className="block w-auto md:w-full rounded-md bg-blue-500 px-3 py-2 text-left text-base font-medium text-gray-300 hover:text-white"
               >
                 Logout
               </button>
-              <span className="block px-3 py-2 text-base font-medium text-gray-300">
-                Hello, {user.fullName}
-              </span>
             </>
           ) : (
             <Link
-              href="/auth/login"
+              href="/login"
               className="block rounded-md bg-blue-500 px-3 py-2 text-base font-medium text-white hover:bg-blue-600"
             >
               Sign in

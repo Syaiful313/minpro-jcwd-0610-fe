@@ -65,6 +65,11 @@ export default function LoginPage() {
                   required
                   className="w-full"
                 />
+                {!!formik.touched.email && !!formik.errors.email && (
+                  <p className="text-destructive text-sm">
+                    {formik.errors.email}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -79,6 +84,11 @@ export default function LoginPage() {
                   required
                   className="w-full"
                 />
+                {!!formik.touched.password && !!formik.errors.password && (
+                  <p className="text-destructive text-sm">
+                    {formik.errors.password}
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center justify-between">
@@ -93,7 +103,7 @@ export default function LoginPage() {
                   </Label>
                 </div>
                 <Link
-                  href="/auth/forgot-password"
+                  href="/forgot-password"
                   className="text-primary text-sm hover:underline"
                 >
                   Forgot password?
@@ -116,7 +126,7 @@ export default function LoginPage() {
         <p className="text-muted-foreground text-center text-sm">
           Don&apos;t have an account?{" "}
           <Link
-            href="/auth/register"
+            href="/register"
             className="text-primary font-semibold hover:underline"
           >
             Sign up

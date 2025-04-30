@@ -19,7 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/utils";
 import ReviewCard from "@/components/ReviewCard";
 import { TicketSelection } from "@/components/TicketSelection";
-import { IEvent } from "@/types/Event";
+import { Event } from "@/types/event";
 import useGetEvents from "@/hooks/api/event/useGetEvents";
 import { FC } from "react";
 import useGetEventBySlug from "@/hooks/api/event/useGetEventBySlug";

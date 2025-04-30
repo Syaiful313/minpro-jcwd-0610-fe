@@ -1,5 +1,5 @@
 "use client";
-import { Badge } from "@/components/ui/badge";
+import PaginationSection from "@/components/PaginationSection";
 import {
   Card,
   CardContent,
@@ -9,19 +9,15 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import useGetProfile from "@/hooks/api/profile/useGetProfile";
-import { useToken } from "@/hooks/useToken";
+import useGetReferrals from "@/hooks/api/referral/useGetReferrals";
 import { format } from "date-fns/format";
 import { useState } from "react";
+import CouponSection from "./CouponSection";
 import OrganizerSection from "./OrganizerSection";
 import SkeletonReferral from "./SkeletonReferral";
-import useGetReferrals from "@/hooks/api/referral/useGetReferrals";
-import PaginationSection from "@/components/PaginationSection";
-import CouponSection from "./CouponSection";
 
 const RefferalSection = () => {
-  const token = useToken();
   const { data: user, isLoading: isProfileLoading } = useGetProfile(
-    token as string,
   );
   const [copied, setCopied] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);

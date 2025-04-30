@@ -3,8 +3,8 @@ import axiosInstance from "@/lib/axios";
 import { loginAction } from "@/redux/slices/userSlice";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 
 interface LoginPayload {
@@ -13,7 +13,6 @@ interface LoginPayload {
 }
 
 const useLogin = () => {
-  const dispatch = useDispatch();
   const router = useRouter();
 
   return useMutation({
@@ -21,11 +20,10 @@ const useLogin = () => {
       const { data } = await axiosInstance.post("/auth/login", payload);
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success("Login successfully");
-      dispatch(loginAction(data));
+      await signIn("credentials", { ...data, token: data.token ,redirect: false });
       router.replace("/");
-      localStorage.setItem("token", JSON.stringify(data));
     },
     onError: (error: AxiosError<any>) => {
       toast.error(error.response?.data.message);

@@ -1,5 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
-import AuthProvider from "@/providers/AuthProvider";
+import NextAuthProvider from "@/providers/NextAuthProvider";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
 import StoreProvider from "@/providers/StoreProvider";
 import type { Metadata } from "next";
@@ -33,10 +33,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <StoreProvider>
-          <AuthProvider>
+          <NextAuthProvider>
             <ReactQueryProvider>{children}</ReactQueryProvider>
-            <Toaster position="top-right" duration={1000}/>
-          </AuthProvider>
+            <Toaster position="top-right" duration={1000} />
+          </NextAuthProvider>
         </StoreProvider>
       </body>
     </html>

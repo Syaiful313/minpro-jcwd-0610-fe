@@ -5,12 +5,12 @@ import { Calendar, MapPin } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
-import { IEvent } from "@/types/Event";
+import { Event } from "@/types/event";
 import { format } from "date-fns";
 import { FC } from "react";
 
 interface EventCardProps {
-  event: IEvent;
+  event: Event;
 }
 
 const EventCard: FC<EventCardProps> = ({ event }) => {

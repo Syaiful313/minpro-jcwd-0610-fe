@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import Navbar from "@/components/Navbar";
 import ProfileSection from "./components/ProfileSection";
 import RefferalSection from "./components/RefferalSection";
-import Navbar from "@/components/Navbar";
 
 export default function ProfilePage() {
   return (
