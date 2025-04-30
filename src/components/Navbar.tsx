@@ -40,6 +40,12 @@ export default function Navbar() {
             >
               Home
             </Link>
+            <Link
+              href="/browsers"
+              className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
+            >
+              Explore
+            </Link>
             {user.id ? (
               <>
                 <Link
