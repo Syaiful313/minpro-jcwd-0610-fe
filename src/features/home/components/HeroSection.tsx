@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import Autoplay from "embla-carousel-autoplay";
+import Autoplay from "embla-carousel-autoplay"
 
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -40,12 +40,12 @@ export function HeroSection() {
 
     {/* Heading */}
     <div className="absolute top-[20%] left-[50%] translate-x-[-50%] translate-y-[-50%] text-white text-3xl md:text-6xl text-center">
-      <h1>Welcome to Seren.id!</h1>
+      <h1>Welcome to EventNesia!</h1>
     </div>
 
     {/* Subheading */}
     <div className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] text-white text-xl md:text-3xl text-center px-4 max-w-md md:max-w-3xl">
-      <p>We are a brand that truly cares about your satisfaction</p>
+      <p>Let's Have Some Fun With Us !</p>
     </div>
   </Carousel>
   );

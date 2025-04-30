@@ -1,8 +1,9 @@
-export interface Event {
-    id: string;
+export interface IEvent {
+    id: number;
+    slug: string;
     name: string;
     description: string;
-    image?: string;
+    thumbnail: string;
     startDate: string;
     endDate: string;
     location: string;

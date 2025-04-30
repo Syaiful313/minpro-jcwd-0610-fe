@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EventList from "@/components/EventList";
+import HeroSectionEvent from "@/features/home/components/Event";
 
 const BrowsersList = () => {
   return (
@@ -41,7 +42,7 @@ const BrowsersList = () => {
           <TabsTrigger value="art">Art & Culture</TabsTrigger>
         </TabsList>
         <TabsContent value="all">
-          <EventList />
+          <HeroSectionEvent />
         </TabsContent>
         <TabsContent value="today">
           <EventList filter="today" />

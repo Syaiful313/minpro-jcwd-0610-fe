@@ -1,108 +1,158 @@
 "use client";
-
+import { useAppSelector } from "@/redux/hooks";
+import { logoutAction } from "@/redux/slices/userSlice";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, Search, X } from "lucide-react";
+import { useDispatch } from "react-redux";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
+export default function Navbar() {
+  const router =useRouter()
+  const dispatch = useDispatch();
+  const user = useAppSelector((state) => state.user);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-export function Navbar() {
-  const pathname = usePathname();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const logout = () => {
+    localStorage.removeItem("token");
+    dispatch(logoutAction());
+    router.push("/")
+  };
 
-  const routes = [
-    {
-      href: "/",
-      label: "Home",
-      active: pathname === "/",
-    },
-    {
-      href: "/browsers",
-      label: "Browsers",
-      active: pathname === "/bloogss" || pathname.startsWith(""),
-    },
-  ];
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   return (
-    <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
-      <div className="container mx-auto flex h-16 items-center p-6">
-        <div className="mr-4 hidden md:flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="text-xl font-bold">Logo Event</span>
-          </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            {routes.map((route) => (
-              <Link
-                key={route.href}
-                href={route.href}
-                className={cn(
-                  "hover:text-foreground/80 transition-colors",
-                  route.active ? "text-foreground" : "text-foreground/60",
-                )}
-              >
-                {route.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
-            >
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle Menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="pr-0">
-            <SheetHeader>
-              <SheetTitle></SheetTitle>
-              <SheetDescription></SheetDescription>
-            </SheetHeader>
-            <Link href="/" className="flex items-center">
-              <span className="text-xl font-bold">Go Go Blogs</span>
+    <nav className="bg-gray-800 shadow-lg">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 justify-between">
+          <div className="flex items-center">
+            <Link href="/" className="text-xl font-bold text-white">
+              Event
             </Link>
-            <nav className="mt-8 flex flex-col space-y-3">
-              {routes.map((route) => (
-                <Link
-                  key={route.href}
-                  href={route.href}
-                  className={cn(
-                    "block px-2 py-1 text-lg font-medium",
-                    route.active ? "text-foreground" : "text-foreground/60",
-                  )}
-                >
-                  {route.label}
-                </Link>
-              ))}
-            </nav>
-          </SheetContent>
-        </Sheet>
+          </div>
 
-        <div className="flex w-full flex-1 items-center justify-end space-x-2 md:justify-end">
-          <nav className="flex items-center gap-4 md:items-center">
-            <Button size="sm" asChild>
-              <Link href="/blog">Sign in</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link href="/blog">Sign Up</Link>
-            </Button>
-          </nav>
+          {/* Desktop menu */}
+          <div className="hidden items-center space-x-4 md:flex cursor-pointer">
+            <Link
+              href="/"
+              className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
+            >
+              Home
+            </Link>
+            <Link
+              href="/browsers"
+              className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
+            >
+              Explore
+            </Link>
+            {user.id ? (
+              <>
+                <Link
+                  href="/profile"
+                  className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
+                >
+                  Profile
+                </Link>
+                <button
+                  onClick={logout}
+                  className="rounded-md bg-blue-500 px-3 py-2 text-sm font-medium text-white"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/auth/login"
+                className="rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white "
+              >
+                Sign in
+              </Link>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="flex items-center md:hidden">
+            <button
+              onClick={toggleMenu}
+              className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none"
+              aria-expanded="false"
+            >
+              <span className="sr-only">Open main menu</span>
+              {/* Menu icon */}
+              <svg
+                className={`${isMenuOpen ? "hidden" : "block"} h-6 w-6`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+              {/* Close icon */}
+              <svg
+                className={`${isMenuOpen ? "block" : "hidden"} h-6 w-6`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
-    </header>
+
+      {/* Mobile menu, show/hide based on menu state */}
+      <div className={`${isMenuOpen ? "block" : "hidden"} md:hidden`}>
+        <div className="space-y-1 px-2 pt-2 pb-3 sm:px-3">
+          <Link
+            href="/"
+            className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:text-white"
+          >
+            Home
+          </Link>
+          {user.id ? (
+            <>
+              <Link
+                href="/profile"
+                className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:text-white"
+              >
+                Profile
+              </Link>
+              <button
+                onClick={logout}
+                className="block w-full bg-blue-500 rounded-md px-3 py-2 text-left text-base font-medium text-gray-300 hover:text-white"
+              >
+                Logout
+              </button>
+              <span className="block px-3 py-2 text-base font-medium text-gray-300">
+                Hello, {user.fullName}
+              </span>
+            </>
+          ) : (
+            <Link
+              href="/auth/login"
+              className="block rounded-md bg-blue-500 px-3 py-2 text-base font-medium text-white hover:bg-blue-600"
+            >
+              Sign in
+            </Link>
+          )}
+        </div>
+      </div>
+    </nav>
   );
 }
