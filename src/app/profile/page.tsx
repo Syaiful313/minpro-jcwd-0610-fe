@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 const Profile = async () => {
   const session = await auth();
 
-  if (!session) return redirect("/auth/login");
+  if (!session) return redirect("/login");
 
   return <ProfilePage />;
 };

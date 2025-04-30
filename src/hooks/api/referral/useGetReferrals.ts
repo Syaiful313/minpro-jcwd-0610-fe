@@ -1,7 +1,7 @@
-import { axiosInstance } from "@/lib/axios";
 import { Referral } from "@/types/referral";
 import { PageableResponse, PaginationQueries } from "@/types/Pagination";
 import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "@/lib/axios";
 
 interface GetReferralsQuery extends PaginationQueries {
   search?: string;

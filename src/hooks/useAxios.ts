@@ -1,6 +1,6 @@
 "use client";
 
-import { axiosInstance } from "@/lib/axios";
+import axiosInstance from "@/lib/axios";
 import { useQueryClient } from "@tanstack/react-query";
 import { getSession, signOut } from "next-auth/react";
 import { useEffect } from "react";

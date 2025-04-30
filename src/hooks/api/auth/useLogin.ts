@@ -1,5 +1,6 @@
 "use client";
-import { axiosInstance } from "@/lib/axios";
+import axiosInstance from "@/lib/axios";
+import { loginAction } from "@/redux/slices/userSlice";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { signIn } from "next-auth/react";

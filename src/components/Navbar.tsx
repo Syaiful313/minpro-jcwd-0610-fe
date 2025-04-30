@@ -19,7 +19,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-gray-800 shadow-lg">
+    <nav className="bg-[#222831] shadow-lg">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between">
           <div className="flex items-center">
@@ -35,6 +35,12 @@ export default function Navbar() {
               className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
             >
               Home
+            </Link>
+            <Link
+              href="/browsers"
+              className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
+            >
+              Explore
             </Link>
             {user?.id ? (
               <>
@@ -54,7 +60,7 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={logout}
-                  className="rounded-md bg-blue-500 px-3 py-2 text-sm font-medium text-white"
+                  className="rounded-md bg-[#393E46] px-3 py-2 text-sm font-medium text-white"
                 >
                   Logout
                 </button>
@@ -69,7 +75,7 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/login"
-                className="rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white"
+                className="rounded-md bg-[#393E46] px-4 py-2 text-sm font-medium text-white"
               >
                 Sign in
               </Link>
