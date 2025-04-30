@@ -10,17 +10,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import useUpdatePassword from "@/hooks/api/profile/useUpdatePassword";
-import { showToast } from "@/utils/toastUtils";
 import { useFormik } from "formik";
-import { FC } from "react";
 import { ChangePasswordSchema } from "../schemas";
 
-interface ChangePasswordProps {
-  token: string;
-}
-
-const ChangePassword: FC<ChangePasswordProps> = () => {
-  const updatePassword = useUpdatePassword();
+const ChangePassword = () => {
+  const { mutateAsync: updatePassword, isPending } = useUpdatePassword();
 
   const passwordFormik = useFormik({
     initialValues: {
@@ -30,19 +24,7 @@ const ChangePassword: FC<ChangePasswordProps> = () => {
     },
     validationSchema: ChangePasswordSchema,
     onSubmit: async (values) => {
-      try {
-        await updatePassword.mutateAsync({
-          currentPassword: values.currentPassword,
-          newPassword: values.newPassword,
-        });
-
-        passwordFormik.resetForm();
-        showToast.success("Password updated successfully");
-      } catch (err: any) {
-        showToast.error(
-          err.response?.data?.message || "Failed to update password",
-        );
-      }
+      await updatePassword(values);
     },
   });
 
@@ -104,12 +86,8 @@ const ChangePassword: FC<ChangePasswordProps> = () => {
           </div>
         </CardContent>
         <CardFooter className="flex justify-end">
-          <Button
-            type="submit"
-            className="my-4"
-            disabled={updatePassword.isPending || !passwordFormik.isValid}
-          >
-            {updatePassword.isPending ? "Changing..." : "Change Password"}
+          <Button type="submit" className="my-4" disabled={isPending}>
+            {isPending ? "Saving..." : "Save"}
           </Button>
         </CardFooter>
       </form>

@@ -40,20 +40,12 @@ const useUpdateProfile = () => {
             },
           },
         );
-
-        return data;
-      } else {
-        const { data } = await axiosInstance.patch<UpdateProfileResponse>(
-          "/profiles",
-          textData,
-        );
-
         return data;
       }
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profiles"] });
-      toast.success(data.message || "Profile updated successfully");
+      toast.success("Profile updated successfully");
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || "Failed to update profile");

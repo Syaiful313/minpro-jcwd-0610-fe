@@ -3,11 +3,11 @@
 import PaginationSection from "@/components/PaginationSection";
 import { Badge } from "@/components/ui/badge";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import useGetCoupons from "@/hooks/api/coupon/useGetCoupons";
 import { format } from "date-fns";

@@ -7,7 +7,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Credentials({
       async authorize(user) {
         if (user) return user;
-
         return null;
       },
     }),
@@ -18,6 +17,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   pages: {
     signIn: "/login",
+    signOut: "/error",
   },
   callbacks: {
     async signIn() {

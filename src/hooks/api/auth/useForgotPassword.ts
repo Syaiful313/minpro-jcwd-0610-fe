@@ -22,7 +22,7 @@ const useForgotPassword = () => {
     },
     onSuccess: () => {
       toast.success("Email sent successfully");
-      router.push("/auth/login");
+      router.push("/login");
     },
     onError: (error: AxiosError<any>) => {
       toast.error(error.response?.data.message);

@@ -1,193 +1,269 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+"use client";
+
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import useUpdateProfile from "@/hooks/api/profile/useUpdateProfile";
-import { EditProfileProps } from "@/types/profile";
-import { getInitials } from "@/utils/stringUtils";
-import { showToast } from "@/utils/toastUtils";
 import { useFormik } from "formik";
-import { Camera } from "lucide-react";
-import { ChangeEvent, useRef, useState } from "react";
+import Image from "next/image";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import useGetProfile from "@/hooks/api/profile/useGetProfile";
+import useUpdateProfile from "@/hooks/api/profile/useUpdateProfile";
 import { EditProfileSchema } from "../schemas";
+import { getInitials } from "@/utils/stringUtils";
 
-const EditProfile = ({ profile}: EditProfileProps) => {
+const EditProfile = () => {
+  const { data: profile, isPending: isPendingGet } = useGetProfile();
   const updateProfile = useUpdateProfile();
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string>("");
+  const profilePictureRef = useRef<HTMLInputElement>(null);
+  const [isProfilePictureRemoved, setIsProfilePictureRemoved] = useState(false);
 
-  const profileFormik = useFormik({
+  const formik = useFormik({
     initialValues: {
-      fullName: profile?.fullName || "",
-      email: profile?.email || "",
-      bio: profile?.bio || "",
-      profilePicture: profile?.profilePicture || "",
+      fullName: "",
+      email: "",
+      bio: "",
+      profilePicture: null,
     },
     validationSchema: EditProfileSchema,
     onSubmit: async (values) => {
       const changedData: {
         fullName?: string;
         bio?: string;
-        profilePictureFile?: File;
+        profilePictureFile?: File | null;
+        removeProfilePicture?: boolean;
       } = {};
 
-      if (values.fullName !== profile?.fullName)
+      if (values.fullName !== profile?.fullName) {
         changedData.fullName = values.fullName;
-      if (values.bio !== profile?.bio) changedData.bio = values.bio;
-      if (selectedFile) changedData.profilePictureFile = selectedFile;
+      }
+      if (values.bio !== profile?.bio) {
+        changedData.bio = values.bio;
+      }
+
+      if (isProfilePictureRemoved) {
+        changedData.removeProfilePicture = true;
+      } else if (values.profilePicture) {
+        changedData.profilePictureFile = values.profilePicture;
+      }
 
       if (Object.keys(changedData).length === 0) {
-        showToast.info("No changes to save");
         return;
       }
 
       try {
         await updateProfile.mutateAsync(changedData);
-        setSelectedFile(null);
-        showToast.success("Profile updated successfully");
-      } catch {
-        showToast.error("Failed to update profile");
+        if (isProfilePictureRemoved) {
+          setIsProfilePictureRemoved(false);
+        }
+      } catch (error) {
+        console.error("Error updating profile:", error);
       }
     },
+    enableReinitialize: true,
   });
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
+  useEffect(() => {
+    if (profile) {
+      formik.setValues({
+        fullName: profile.fullName || "",
+        email: profile.email || "",
+        bio: profile.bio || "",
+        profilePicture: null,
+      });
+      setSelectedImage(profile.profilePicture || "");
+      setIsProfilePictureRemoved(false);
+    }
+  }, [profile]);
 
-      const fileReader = new FileReader();
-      fileReader.onload = (event) => {
-        if (event.target?.result) {
-          setPreviewImage(event.target.result as string);
-        }
-      };
-      fileReader.readAsDataURL(file);
+  const handleProfilePictureChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length) {
+      const file = files[0];
+      formik.setFieldValue("profilePicture", file);
+      setSelectedImage(URL.createObjectURL(file));
+      setIsProfilePictureRemoved(false);
     }
   };
 
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
+  const handleRemoveProfilePicture = () => {
+    formik.setFieldValue("profilePicture", null);
+    setSelectedImage("");
+    setIsProfilePictureRemoved(true);
+    if (profilePictureRef.current) {
+      profilePictureRef.current.value = "";
+    }
   };
+
+  if (isPendingGet) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center p-6">
+          <p>Loading profile...</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Profile Information</CardTitle>
-        <CardDescription>
-          Update your personal information and profile picture
-        </CardDescription>
-      </CardHeader>
-      <form onSubmit={profileFormik.handleSubmit}>
-        <CardContent className="space-y-6">
-          <div className="flex flex-col gap-6 md:flex-row">
-            <div className="flex flex-col items-center gap-4">
-              <div className="relative">
-                <Avatar
-                  className="group h-32 w-32 cursor-pointer"
-                  onClick={handleAvatarClick}
-                >
-                  <AvatarImage
-                    src={
-                      previewImage ||
-                      profileFormik.values.profilePicture ||
-                      "/placeholder.svg?height=128&width=128"
-                    }
-                    alt="Profile picture"
-                  />
-                  <AvatarFallback>
-                    {getInitials(profileFormik.values.fullName)}
-                  </AvatarFallback>
-                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
-                    <Camera className="text-white" size={32} />
-                  </div>
-                </Avatar>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  id="profile-picture-upload"
-                />
+      <CardContent className="flex flex-col p-4">
+        <form className="space-y-6" onSubmit={formik.handleSubmit}>
+          <div className="flex flex-col md:flex-row md:gap-6">
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="profilePicture" className="text-base">
+                Foto Profil
+              </Label>
+              <div className="flex items-center space-x-4">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Avatar className="h-28 w-28 cursor-pointer md:h-36 md:w-36">
+                      {selectedImage && !isProfilePictureRemoved ? (
+                        <AvatarImage
+                          src={selectedImage}
+                          alt="Profile picture"
+                        />
+                      ) : (
+                        <AvatarFallback>
+                          {getInitials(formik.values.fullName)}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                  </DialogTrigger>
+                  <DialogContent className="mx-auto max-w-md space-y-1.5 rounded-lg p-4 shadow-md">
+                    <DialogHeader>
+                      <DialogTitle className="text-center">
+                        Profile Picture
+                      </DialogTitle>
+                      <DialogDescription className="text-center">
+                        Change or remove your profile picture here.
+                        <br />
+                        (Maximum size 1MB)
+                      </DialogDescription>
+                    </DialogHeader>
+                    {selectedImage && !isProfilePictureRemoved ? (
+                      <div>
+                        <div className="relative mx-auto aspect-square w-full">
+                          <Image
+                            src={selectedImage}
+                            alt="Profile Preview"
+                            fill
+                            priority
+                            sizes="70%"
+                            className="rounded-md object-cover"
+                          />
+                        </div>
+                        <div className="flex justify-center space-x-4 mt-4">
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={handleRemoveProfilePicture}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4">
+                        <p className="text-muted-foreground">No profile picture selected</p>
+                      </div>
+                    )}
+                    <Input
+                      ref={profilePictureRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleProfilePictureChange}
+                      className="mx-auto max-w-xs"
+                    />
+                  </DialogContent>
+                </Dialog>
               </div>
-              <p className="text-muted-foreground text-center text-sm">
-                Click on the avatar to upload a new image
+              <p className="text-center text-sm text-muted-foreground">
+                Click to change
               </p>
-              {selectedFile && (
-                <p className="text-muted-foreground text-center text-sm">
-                  Selected: {selectedFile.name}
-                </p>
-              )}
             </div>
+
             <div className="flex-1 space-y-4">
-              <div className="grid gap-2">
-                <Label htmlFor="fullName">Full Name</Label>
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="fullName" className="text-base">
+                  Full Name
+                </Label>
                 <Input
                   id="fullName"
-                  {...profileFormik.getFieldProps("fullName")}
+                  name="fullName"
+                  type="text"
+                  placeholder="Full Name"
+                  value={formik.values.fullName}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                 />
-                {profileFormik.touched.fullName &&
-                profileFormik.errors.fullName ? (
-                  <p className="text-xs text-red-500">
-                    {typeof profileFormik.errors.fullName === "string" &&
-                      profileFormik.errors.fullName}
-                  </p>
-                ) : null}
+                {formik.touched.fullName && formik.errors.fullName && (
+                  <p className="text-xs text-red-500">{formik.errors.fullName}</p>
+                )}
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="email" className="text-base">
+                  Email
+                </Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
-                  value={profileFormik.values.email}
+                  value={formik.values.email}
                   disabled
                 />
-                <p className="text-muted-foreground text-xs">
+                <p className="text-xs text-muted-foreground">
                   Email cannot be changed
                 </p>
               </div>
             </div>
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="bio">Bio</Label>
+
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="bio" className="text-base">
+              Bio
+            </Label>
             <Textarea
               id="bio"
-              {...profileFormik.getFieldProps("bio")}
+              name="bio"
               placeholder="Tell us about yourself"
               rows={4}
+              value={formik.values.bio}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
             />
-            {profileFormik.touched.bio && profileFormik.errors.bio ? (
-              <p className="text-xs text-red-500">
-                {typeof profileFormik.errors.bio === "string" &&
-                  profileFormik.errors.bio}
-              </p>
+            {formik.touched.bio && formik.errors.bio ? (
+              <p className="text-xs text-red-500">{formik.errors.bio}</p>
             ) : (
-              <p className="text-muted-foreground text-xs">
+              <p className="text-xs text-muted-foreground">
                 A brief description about yourself
               </p>
             )}
           </div>
-        </CardContent>
-        <CardFooter className="flex justify-end">
-          <Button
-            type="submit"
-            disabled={updateProfile.isPending || !profileFormik.isValid}
-          >
-            {updateProfile.isPending ? "Saving..." : "Save"}
-          </Button>
-        </CardFooter>
-      </form>
+
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              className="md:my-3"
+              disabled={updateProfile.isPending}
+            >
+              {updateProfile.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
     </Card>
   );
 };
