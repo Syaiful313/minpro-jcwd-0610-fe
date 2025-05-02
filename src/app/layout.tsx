@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
+import TokenProvider from "@/providers/TokenProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,12 +33,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <StoreProvider>
-          <NextAuthProvider>
-            <ReactQueryProvider>{children}</ReactQueryProvider>
-            <Toaster position="top-right" duration={1000} />
-          </NextAuthProvider>
-        </StoreProvider>
+        <ReactQueryProvider>
+          <StoreProvider>
+            <NextAuthProvider>
+              <TokenProvider>{children}</TokenProvider>
+            </NextAuthProvider>
+          </StoreProvider>
+        </ReactQueryProvider>
+        <Toaster position="top-right" duration={1000} />
       </body>
     </html>
   );

@@ -1,6 +1,5 @@
 "use client";
 import axiosInstance from "@/lib/axios";
-import { loginAction } from "@/redux/slices/userSlice";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { signIn } from "next-auth/react";
@@ -22,8 +21,16 @@ const useLogin = () => {
     },
     onSuccess: async (data) => {
       toast.success("Login successfully");
-      await signIn("credentials", { ...data, token: data.token ,redirect: false });
-      router.replace("/");
+      await signIn("credentials", {
+        ...data,
+        token: data.token,
+        redirect: false,
+      });
+      if (data.role === "ORGANIZER") {
+        router.replace("/dashboard");
+      } else {
+        router.replace("/");
+      }
     },
     onError: (error: AxiosError<any>) => {
       toast.error(error.response?.data.message);
