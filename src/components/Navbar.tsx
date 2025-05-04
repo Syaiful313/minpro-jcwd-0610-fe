@@ -23,7 +23,7 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between">
           <div className="flex items-center">
-            <Link href="/" className="text-2xl font-bold font-serif text-white">
+            <Link href="/" className="font-serif text-2xl font-bold text-white">
               EventNesia
             </Link>
           </div>
@@ -65,12 +65,12 @@ export default function Navbar() {
                   Logout
                 </button>
                 <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarImage
-                  src={user?.profilePicture}
-                  alt={user?.fullName}
-                />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-              </Avatar>
+                  <AvatarImage
+                    src={user?.profilePicture}
+                    alt={user?.fullName}
+                  />
+                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                </Avatar>
               </>
             ) : (
               <Link
@@ -154,7 +154,7 @@ export default function Navbar() {
               </Link>
               <button
                 onClick={logout}
-                className="block w-auto md:w-full rounded-md bg-blue-500 px-3 py-2 text-left text-base font-medium text-gray-300 hover:text-white"
+                className="block w-auto rounded-md bg-blue-500 px-3 py-2 text-left text-base font-medium text-gray-300 hover:text-white md:w-full"
               >
                 Logout
               </button>

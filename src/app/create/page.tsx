@@ -1,9 +1,7 @@
-import React from 'react'
+import CreatePage from "@/features/create";
 
-const CreateEvent = () => {
-  return (
-    <div>CreateEvent</div>
-  )
-}
+const createEvent = () => {
+  return   <CreatePage />
+};
 
-export default CreateEvent
+export default createEvent;

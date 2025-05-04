@@ -15,6 +15,7 @@ const useAxios = () => {
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
+        console.log("Axios Request Config:", config);
         return config;
       },
       (error) => {

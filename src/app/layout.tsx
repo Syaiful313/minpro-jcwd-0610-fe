@@ -29,8 +29,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
+      {/* <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      > */}
+      <body
+        className="min-h-screen bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/assets/background.jpg')" }}
       >
         <StoreProvider>
           <NextAuthProvider>
