@@ -1,203 +1,3 @@
-// "use client";
-// import TiptapRichTextEditor from "@/components/TiptapRichEditor";
-// import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label";
-// import { Textarea } from "@/components/ui/textarea";
-// import useCreateEvent, {
-//   CreateEventPayload,
-// } from "@/hooks/api/event/useCreateEvent";
-// import { useFormik } from "formik";
-// import { CreateEventSchema } from "../schema";
-// import { ChangeEvent, useRef, useState } from "react";
-// import Image from "next/image";
-// import { Button } from "@/components/ui/button";
-
-// const CreateEventForm = () => {
-//   const { mutateAsync: createEvent, isPending } = useCreateEvent();
-
-//   const formik = useFormik({
-//     initialValues: {
-//       name: "",
-//       thumbnail: null,
-//       description: "",
-//       category: "",
-//       location: "",
-//       startDate: "",
-//       endDate: "",
-//     },
-//     validationSchema: CreateEventSchema,
-//     onSubmit: async (values) => {
-//       await createEvent(values);
-//     },
-//   });
-
-//   const [selectedImage, setSelectedImage] = useState<string>("");
-//   const thumbnailReff = useRef<HTMLInputElement>(null);
-
-//   const onChangeThumbnail = (e: ChangeEvent<HTMLInputElement>) => {
-//     const files = e.target.files;
-
-//     if (files && files.length) [formik.setFieldValue("thumbnail", files[0])];
-//     setSelectedImage(URL.createObjectURL(files![0]));
-//   };
-
-//   const removeThumbnail = () => {
-//     formik.setFieldValue("thumbnail", null);
-//     setSelectedImage("");
-//     if (thumbnailReff.current) {
-//       thumbnailReff.current.value = "";
-//     }
-//   };
-
-//   return (
-//     <form className="mt-10 mb-20 space-y-4" onSubmit={formik.handleSubmit}>
-//       <div className="grid gap-2">
-//         <Label htmlFor="name">Event Name</Label>
-//         <Input
-//           id="name"
-//           name="name"
-//           type="text"
-//           placeholder="Title"
-//           value={formik.values.name}
-//           required
-//           onChange={formik.handleChange}
-//           onBlur={formik.handleBlur}
-//           className="w-full"
-//         />
-//         {!!formik.touched.name && !!formik.errors.name && (
-//           <p className="text-destructive text-sm">{formik.errors.name}</p>
-//         )}
-//       </div>
-
-//       <div className="grid gap-2">
-//         <Label htmlFor="category">Category</Label>
-//         <Input
-//           id="category"
-//           name="category"
-//           type="text"
-//           placeholder="category"
-//           value={formik.values.category}
-//           required
-//           onChange={formik.handleChange}
-//           onBlur={formik.handleBlur}
-//           className="w-full"
-//         />
-//         {!!formik.touched.category && !!formik.errors.category && (
-//           <p className="text-destructive text-sm">{formik.errors.category}</p>
-//         )}
-//       </div>
-
-//       <div className="grid gap-2">
-//         <Label htmlFor="location">Location</Label>
-//         <Input
-//           id="location"
-//           name="location"
-//           type="text"
-//           placeholder="location"
-//           value={formik.values.location}
-//           required
-//           onChange={formik.handleChange}
-//           onBlur={formik.handleBlur}
-//           className="w-full"
-//         />
-//         {!!formik.touched.location && !!formik.errors.location && (
-//           <p className="text-destructive text-sm">{formik.errors.location}</p>
-//         )}
-//       </div>
-
-//       <div className="grid gap-2">
-//         <Label htmlFor="startDate">Start Event</Label>
-//         <Input
-//           id="startDate"
-//           name="startDate"
-//           type="text"
-//           placeholder="startDate"
-//           value={formik.values.startDate}
-//           required
-//           onChange={formik.handleChange}
-//           onBlur={formik.handleBlur}
-//           className="w-full"
-//         />
-//         {!!formik.touched.startDate && !!formik.errors.startDate && (
-//           <p className="text-destructive text-sm">{formik.errors.startDate}</p>
-//         )}
-//       </div>
-
-//       <div className="grid gap-2">
-//         <Label htmlFor="endDate">Event End</Label>
-//         <Input
-//           id="endDate"
-//           name="endDate"
-//           type="text"
-//           placeholder="endDate"
-//           value={formik.values.endDate}
-//           required
-//           onChange={formik.handleChange}
-//           onBlur={formik.handleBlur}
-//           className="w-full"
-//         />
-//         {!!formik.touched.endDate && !!formik.errors.endDate && (
-//           <p className="text-destructive text-sm">{formik.errors.endDate}</p>
-//         )}
-//       </div>
-
-//       <div className="grid gap-2">
-//         <TiptapRichTextEditor
-//           label="Description"
-//           field="description"
-//           isTouch={formik.touched.description}
-//           description={formik.values.description}
-//           onChange={(value: string) =>
-//             formik.setFieldValue("description", value)
-//           }
-//           setError={formik.setFieldError}
-//           setTouch={formik.setFieldTouched}
-//         />
-//       </div>
-
-//       {selectedImage && (
-//         <>
-//           <div className="relative h-[150px] w-[200px]">
-//             <Image
-//               src={selectedImage}
-//               alt="thumbnail"
-//               className="object-cover"
-//               fill
-//             />
-//           </div>
-
-//           <Button variant="destructive" type="button" onClick={removeThumbnail}>
-//             Remove
-//           </Button>
-//         </>
-//       )}
-
-//       <div className="grid gap-2">
-//         <Label htmlFor="thumbnail">Thumbnail</Label>
-//         <Input
-//           ref={thumbnailReff}
-//           name="thumbnail"
-//           id="thumbnail"
-//           type="file"
-//           accept="image/*"
-//           onChange={onChangeThumbnail}
-//         />
-//         {!!formik.touched.thumbnail && !!formik.errors.thumbnail && (
-//           <p className="text-destructive text-sm">{formik.errors.thumbnail}</p>
-//         )}
-//       </div>
-
-//       <div className="flex justify-end">
-//         <Button className="in-hover:via-violet-400" type="submit" disabled={isPending}>
-//           {isPending ? "Creating..." : "Create"}
-//         </Button>
-//       </div>
-//     </form>
-//   );
-// };
-
-// export default CreateEventForm;
-
 "use client";
 
 import { Input } from "@/components/ui/input";
@@ -212,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import TiptapRichTextEditor from "@/components/TiptapRichEditor";
 
 interface Ticket {
-  name: string;
+  name: string; // Use 'name' instead of 'type'
   price: string;
   quantity: string;
 }
@@ -265,14 +65,14 @@ const CreateEventForm = () => {
       location: "",
       startDate: "",
       endDate: "",
-      tickets: [{ name: '', price: '', quantity: '' }],
+      tickets: [{ name: '', price: '', quantity: '' }], // Use 'name' here
       vouchers: []
     },
     validationSchema: CreateEventSchema,
     onSubmit: async (values) => {
       try {
         const formattedTickets = values.tickets.map(ticket => ({
-          name: ticket.name || '',
+          name: ticket.name || '', // Map 'type' to 'name'
           price: Number(ticket.price) || 0,
           quantity: Number(ticket.quantity) || 0
         }));
@@ -315,7 +115,7 @@ const CreateEventForm = () => {
     }
   };
 
-  const addTicket = () => formik.setFieldValue("tickets", [...formik.values.tickets, { type: '', price: '', quantity: '' }]);
+  const addTicket = () => formik.setFieldValue("tickets", [...formik.values.tickets, { name: '', price: '', quantity: '' }]); // Use 'name' here
   
   const removeTicket = (index: number) => {
     const newTickets = [...formik.values.tickets];
@@ -480,10 +280,10 @@ const CreateEventForm = () => {
         {formik.values.tickets.map((ticket, index) => (
           <div key={index} className="grid gap-2">
             <Select
-              value={ticket.name}
+              value={ticket.name} // Use 'name' here
               onValueChange={(value) => {
                 const newTickets = [...formik.values.tickets];
-                newTickets[index].name = value;
+                newTickets[index].name = value; // Use 'name' here
                 formik.setFieldValue("tickets", newTickets);
               }}
             >
@@ -552,7 +352,6 @@ const CreateEventForm = () => {
                 formik.setFieldValue("vouchers", newVouchers);
               }}
             />
-            <p>Start Valid Voucher</p>
             <Input
               type="datetime-local"
               placeholder="Start Date"
@@ -563,7 +362,6 @@ const CreateEventForm = () => {
                 formik.setFieldValue("vouchers", newVouchers);
               }}
             />
-            <p>End Valid Voucher</p>
             <Input
               type="datetime-local"
               placeholder="End Date"
