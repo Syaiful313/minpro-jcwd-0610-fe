@@ -9,6 +9,11 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const user = data?.user;
   const isOrganizer = user?.role === "ORGANIZER";
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
 
   const logout = () => {
     signOut();
@@ -28,7 +33,6 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Desktop menu */}
           <div className="hidden cursor-pointer items-center space-x-4 md:flex">
             <Link
               href="/"
@@ -44,33 +48,58 @@ export default function Navbar() {
             </Link>
             {user?.id ? (
               <>
-                {isOrganizer && (
-                  <Link
-                    href="/dashboard"
-                    className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
+                <div className="relative">
+                  <div
+                    className="h-8 w-8 cursor-pointer rounded-full"
+                    onClick={toggleDropdown}
                   >
-                    Dashboard
-                  </Link>
-                )}
-                <Link
-                  href="/profile"
-                  className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
-                >
-                  Profile
-                </Link>
-                <button
-                  onClick={logout}
-                  className="rounded-md bg-[#393E46] px-3 py-2 text-sm font-medium text-white"
-                >
-                  Logout
-                </button>
-                <Avatar className="h-8 w-8 rounded-lg grayscale">
-                  <AvatarImage
-                    src={user?.profilePicture}
-                    alt={user?.fullName}
-                  />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                </Avatar>
+                    <Avatar className="h-8 w-8 rounded-full">
+                      <AvatarImage
+                        src={user?.profilePicture}
+                        alt={user?.fullName}
+                      />
+                      <AvatarFallback className="rounded-full">
+                        {user?.fullName
+                          ?.split(" ")
+                          .map((name) => name[0])
+                          .join("") || "CN"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+
+                  {isOpen && (
+                    <div className="absolute right-0 z-10 mt-2 w-48 rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+                      <ul>
+                        <li className="hover:bg-gray-100">
+                          <Link
+                            href="/profile"
+                            className="block px-4 py-2 text-sm text-gray-700"
+                          >
+                            Profile
+                          </Link>
+                        </li>
+                        {isOrganizer && (
+                          <li className="hover:bg-gray-100">
+                            <Link
+                              href="/dashboard"
+                              className="block px-4 py-2 text-sm text-gray-700"
+                            >
+                              Dashboard
+                            </Link>
+                          </li>
+                        )}
+                        <li className="border-t border-gray-100 hover:bg-gray-100">
+                          <button
+                            onClick={logout}
+                            className="block w-full px-4 py-2 text-left text-sm text-red-600"
+                          >
+                            Logout
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
               <Link
@@ -82,7 +111,6 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile menu button */}
           <div className="flex items-center md:hidden">
             <button
               onClick={toggleMenu}
@@ -90,7 +118,6 @@ export default function Navbar() {
               aria-expanded="false"
             >
               <span className="sr-only">Open main menu</span>
-              {/* Menu icon */}
               <svg
                 className={`${isMenuOpen ? "hidden" : "block"} h-6 w-6`}
                 xmlns="http://www.w3.org/2000/svg"
@@ -106,7 +133,6 @@ export default function Navbar() {
                   d="M4 6h16M4 12h16M4 18h16"
                 />
               </svg>
-              {/* Close icon */}
               <svg
                 className={`${isMenuOpen ? "block" : "hidden"} h-6 w-6`}
                 xmlns="http://www.w3.org/2000/svg"
@@ -127,34 +153,39 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu, show/hide based on menu state */}
       <div className={`${isMenuOpen ? "block" : "hidden"} md:hidden`}>
         <div className="space-y-1 px-2 pt-2 pb-3 sm:px-3">
           <Link
             href="/"
-            className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:text-white"
+            className="block rounded-md px-3 py-2 text-center text-base font-medium text-gray-300 hover:text-white"
           >
             Home
           </Link>
+          <Link
+            href="/browsers"
+            className="block rounded-md px-3 py-2 text-center text-base font-medium text-gray-300 hover:text-white"
+          >
+            Explore
+          </Link>
           {user?.id ? (
             <>
+              <Link
+                href="/profile"
+                className="block rounded-md px-3 py-2 text-center text-base font-medium text-gray-300 hover:text-white"
+              >
+                Profile
+              </Link>
               {isOrganizer && (
                 <Link
                   href="/dashboard"
-                  className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:text-white"
+                  className="block rounded-md px-3 py-2 text-center text-base font-medium text-gray-300 hover:text-white"
                 >
                   Dashboard
                 </Link>
               )}
-              <Link
-                href="/profile"
-                className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:text-white"
-              >
-                Profile
-              </Link>
               <button
                 onClick={logout}
-                className="block w-auto rounded-md bg-blue-500 px-3 py-2 text-left text-base font-medium text-gray-300 hover:text-white md:w-full"
+                className="block w-full rounded-md px-3 py-2 text-center text-base font-medium text-gray-300 hover:text-white"
               >
                 Logout
               </button>
@@ -162,7 +193,7 @@ export default function Navbar() {
           ) : (
             <Link
               href="/login"
-              className="block rounded-md bg-blue-500 px-3 py-2 text-base font-medium text-white hover:bg-blue-600"
+              className="block rounded-md bg-blue-500 px-3 py-2 text-center text-base font-medium text-white hover:bg-blue-600"
             >
               Sign in
             </Link>

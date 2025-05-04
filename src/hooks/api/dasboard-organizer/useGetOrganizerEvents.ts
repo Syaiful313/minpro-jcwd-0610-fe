@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 
 interface GetOrganizereventsQuery extends PaginationQueries {
   search?: string;
-  status?: string;
 }
 
 const useGetOrganizerevents = (queries: GetOrganizereventsQuery) => {
