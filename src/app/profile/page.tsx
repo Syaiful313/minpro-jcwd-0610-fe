@@ -8,7 +8,11 @@ const Profile = async () => {
 
   if (!session) return redirect("/login");
 
-  return <ProfilePage />;
+  return (
+    <main className="bg-white">
+      <ProfilePage />;
+    </main>
+  );
 };
 
 export default Profile;

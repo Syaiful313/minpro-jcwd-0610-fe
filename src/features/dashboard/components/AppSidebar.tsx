@@ -54,12 +54,6 @@ const data = {
       url: "/dashboard/transactions",
       icon: BarChartIcon,
     },
-
-    {
-      title: "Attendees",
-      url: "/dashboard/attendees",
-      icon: UsersIcon,
-    },
   ],
   navClouds: [
     {
