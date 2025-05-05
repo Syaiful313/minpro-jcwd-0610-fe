@@ -1,27 +1,26 @@
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "../components/AppSidebar";
-import { EventsTable } from "./components/EventTable";
-import { SiteHeaderEvent } from "./components/SiteHeaderEvent";
+import { SiteHeaderTransaction } from "./components/SiteHeaderTransaction";
+import { TransactionTable } from "./components/TransactionTable";
 
-const DashboardEventsPage = () => {
+const DashboardTransactionsPage = () => {
   return (
     <SidebarProvider>
       <AppSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeaderEvent />
+        <SiteHeaderTransaction />
         <div className="container mx-auto px-4 py-6">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold">Your Events</h1>
+            <h1 className="text-2xl font-bold">Your Transactions</h1>
             <p className="text-muted-foreground mt-1">
-              Manage and monitor all your events in one place. Create new
-              events, view attendees, and track performance.
+              Manage and monitor all your transactions in one place
             </p>
           </div>
-          <EventsTable />
+          <TransactionTable />
         </div>
       </SidebarInset>
     </SidebarProvider>
   );
 };
 
-export default DashboardEventsPage;
+export default DashboardTransactionsPage;

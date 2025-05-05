@@ -2,9 +2,9 @@
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import useGetEventBySlug from "@/hooks/api/event/useGetEventBySlug";
 import { FC, useEffect, useState } from "react";
-import { AppSidebarEvent } from "./components/AppSidebar";
 import { AttendeesTableDetail } from "./components/AttendeesTableDetail";
 import { SiteHeaderEventDetail } from "./components/SiteHeaderEventDetail";
+import { AppSidebar } from "../components/AppSidebar";
 
 interface EventDetailPageProps {
   slug: string;
@@ -22,7 +22,7 @@ const EventDetailPage: FC<EventDetailPageProps> = ({ slug }) => {
 
   return (
     <SidebarProvider>
-      <AppSidebarEvent variant="inset" />
+      <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeaderEventDetail eventName={eventName} />
         <div className="container mx-auto px-4 py-6">
