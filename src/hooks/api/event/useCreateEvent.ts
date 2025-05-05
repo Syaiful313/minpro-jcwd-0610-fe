@@ -28,7 +28,8 @@ const useCreateEvent = () => {
     mutationFn: async (payload: CreateEventPayload) => {
       const createEventForm = new FormData();
 
-      console.log("Payload before appending:", payload);
+
+
       createEventForm.append("name", payload.name);
       if (payload.thumbnail) {
         createEventForm.append("thumbnail", payload.thumbnail);
@@ -41,7 +42,8 @@ const useCreateEvent = () => {
       createEventForm.append("tickets", payload.tickets); // Add these
       createEventForm.append("vouchers", payload.vouchers); // Add these
 
-      console.log("Form data:", createEventForm);
+
+
       const data = await axiosInstance.post("/events/createevent", createEventForm);
       return data;
     },

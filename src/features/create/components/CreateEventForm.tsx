@@ -10,10 +10,13 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import TiptapRichTextEditor from "@/components/TiptapRichEditor";
+
 import { toast } from "sonner";
 
+
 interface Ticket {
-  name: string; 
+  name: string;
+
   price: string;
   quantity: string;
 }
@@ -66,15 +69,19 @@ const CreateEventForm = () => {
       location: "",
       startDate: "",
       endDate: "",
+
       tickets: [{ name: '', price: '', quantity: '' }], 
+
       vouchers: []
     },
     validationSchema: CreateEventSchema,
     onSubmit: async (values) => {
-      console.log("Formik Values onSubmit:", values);
-      // try {
+
+     
         const formattedTickets = values.tickets.map(ticket => ({
           name: ticket.name || '', 
+
+    
           price: Number(ticket.price) || 0,
           quantity: Number(ticket.quantity) || 0
         }));
@@ -91,10 +98,12 @@ const CreateEventForm = () => {
           tickets: JSON.stringify(formattedTickets),
           vouchers: JSON.stringify(formattedVouchers)
         };
+
         console.log("Formatted Payload:", eventPayload);
          createEvent(eventPayload);
-      // } catch (error) {
-      // }
+     
+
+       
     },
   });
 
@@ -116,7 +125,9 @@ const CreateEventForm = () => {
     }
   };
 
-  const addTicket = () => formik.setFieldValue("tickets", [...formik.values.tickets, { name: '', price: '', quantity: '' }]); // Use 'name' here
+
+  const addTicket = () => formik.setFieldValue("tickets", [...formik.values.tickets, { name: '', price: '', quantity: '' }]); 
+
   
   const removeTicket = (index: number) => {
     const newTickets = [...formik.values.tickets];
@@ -281,10 +292,11 @@ const CreateEventForm = () => {
         {formik.values.tickets.map((ticket, index) => (
           <div key={index} className="grid gap-2">
             <Select
-              value={ticket.name} // Use 'name' here
+              value={ticket.name} 
               onValueChange={(value) => {
                 const newTickets = [...formik.values.tickets];
-                newTickets[index].name = value; // Use 'name' here
+                newTickets[index].name = value; 
+
                 formik.setFieldValue("tickets", newTickets);
               }}
             >
@@ -353,6 +365,9 @@ const CreateEventForm = () => {
                 formik.setFieldValue("vouchers", newVouchers);
               }}
             />
+
+            <p>Start Valid Voucher</p>
+
             <Input
               type="datetime-local"
               placeholder="Start Date"
@@ -363,6 +378,8 @@ const CreateEventForm = () => {
                 formik.setFieldValue("vouchers", newVouchers);
               }}
             />
+
+            <p>End Valid Voucher</p>
             <Input
               type="datetime-local"
               placeholder="End Date"
@@ -385,14 +402,15 @@ const CreateEventForm = () => {
 
       <div className="flex justify-end">
         <Button
+
           type="submit"
           className="bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white"
           disabled={isPending}
           onClick={() => {
-            console.log("Is Pending:", isPending);
-            console.log("Formik Errors:", formik.errors);
+            
           }}
           
+
         >
           {isPending ? "Creating..." : "Create"}
         </Button>
@@ -402,4 +420,5 @@ const CreateEventForm = () => {
 };
 
 export default CreateEventForm;
+
 
