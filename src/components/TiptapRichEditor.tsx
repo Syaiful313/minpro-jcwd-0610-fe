@@ -48,6 +48,9 @@ const TiptapRichTextEditor: FC<TiptapRichTextEditorProps> = ({
     onBlur: () => {
       if (editor?.isEmpty) setError(field, `${label} is required`);
     },
+
+    immediatelyRender: false,
+
   });
 
   return (
