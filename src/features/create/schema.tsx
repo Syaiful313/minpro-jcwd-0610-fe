@@ -13,7 +13,9 @@ export const CreateEventSchema = Yup.object().shape({
   tickets: Yup.array()
     .of(
       Yup.object().shape({
-        type: Yup.string().required("Ticket type is required"),
+
+        name: Yup.string().required("Ticket type is required"),
+
         price: Yup.number().required("Ticket price is required").min(0, "Price must be positive"),
         quantity: Yup.number().required("Ticket quantity is required").min(1, "Quantity must be at least 1"),
       })
