@@ -71,6 +71,7 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
 import CreateEventModal from "./CreateEventModal";
+import EditEventModal from "./EditEventModal"; // Impor EditEventModal
 
 interface Event {
   id: number;
@@ -120,6 +121,9 @@ export function EventsTable() {
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
+  
+  // State untuk refresh data setelah edit
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const {
     data: eventsData,
@@ -129,7 +133,7 @@ export function EventsTable() {
     page: currentPage,
     take: pageSize,
     search: debouncedSearch,
-  });
+  }, ); // Tambahkan refreshTrigger sebagai dependency
 
   const [data, setData] = React.useState<Event[]>([]);
 
@@ -171,6 +175,11 @@ export function EventsTable() {
   const handleDeleteEvent = (event: Event) => {
     setEventToDelete(event);
     setIsDeleteDialogOpen(true);
+  };
+
+  // Handler untuk refresh data setelah event diedit
+  const handleEventEdited = () => {
+    setRefreshTrigger(prev => prev + 1);
   };
 
   const confirmDelete = () => {
@@ -277,12 +286,13 @@ export function EventsTable() {
               >
                 <Eye className="h-4 w-4" /> View Event
               </DropdownMenuItem>
-              <DropdownMenuItem
-                className="flex items-center gap-2"
-                onClick={() => handleEditEvent(row.original.slug)}
-              >
-                <Edit className="h-4 w-4" /> Edit Event
-              </DropdownMenuItem>
+              {/* Gunakan komponen EditEventModal sebagai pengganti redirect */}
+              <EditEventModal 
+                eventId={row.original.id} 
+                triggerButtonText="Edit Event"
+                triggerButtonIcon={false}
+                onSuccess={handleEventEdited}
+              />
               <DropdownMenuItem
                 className="flex items-center gap-2 text-red-600"
                 onClick={() => handleDeleteEvent(row.original)}
