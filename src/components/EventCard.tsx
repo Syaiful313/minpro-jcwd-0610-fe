@@ -8,6 +8,7 @@ import { formatCurrency } from "@/lib/utils";
 import { Event } from "@/types/event";
 import { format } from "date-fns";
 import { FC } from "react";
+import Markdown from "./MarkDown";
 
 interface EventCardProps {
   event: Event;
@@ -55,8 +56,8 @@ const EventCard: FC<EventCardProps> = ({ event }) => {
           </CardContent>
           <CardFooter className="flex items-center justify-between border-t p-4">
             <div className="flex flex-col">
-              <div>
-                <p>{description}</p>
+              <div className="line-clamp-3">
+                <Markdown content={description} />
               </div>
               <div className="mt-4">
                 <Badge variant="outline">View Details</Badge>

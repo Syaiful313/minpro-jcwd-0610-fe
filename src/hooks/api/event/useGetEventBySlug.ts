@@ -9,6 +9,8 @@ const useGetEventBySlug = (slug: string) => {
     queryKey: ["event", slug],
     queryFn: async () => {
       const { data } = await axiosInstance.get<Event>(`/events/${slug}`);
+      console.log("Slug:", slug);
+
       return data;
     },
   });

@@ -46,6 +46,7 @@ const OrganizerSection = () => {
         companyAddress: values.companyAddress,
         details: values.details,
         npwp: values.npwp,
+        acceptedAt: false,
       });
     },
   });

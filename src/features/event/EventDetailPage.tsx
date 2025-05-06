@@ -2,35 +2,46 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  Star,
-  Users,
-  Tag,
-  ArrowLeft,
-} from "lucide-react";
-
+import { Calendar, Clock, MapPin, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { formatCurrency } from "@/lib/utils";
-import ReviewCard from "@/components/ReviewCard";
 import { TicketSelection } from "@/components/TicketSelection";
-import { Event } from "@/types/event";
-import useGetEvents from "@/hooks/api/event/useGetEvents";
-import { FC } from "react";
+import { Event } from "@/types/event"; // Ensure to import Event interface
 import useGetEventBySlug from "@/hooks/api/event/useGetEventBySlug";
-
+import { FC } from "react";
+import { formatCurrency } from "@/lib/utils"; // Make sure this helper is imported for formatting
+import Markdown from "@/components/MarkDown";
+import { formatDate } from "date-fns";
 
 interface EventDetail {
   slug: string;
 }
 
 const EventDetailPage: FC<EventDetail> = ({ slug }) => {
-  const { data: event, isPending } = useGetEventBySlug(slug);
+  const { data: event, isPending, error } = useGetEventBySlug(slug);
+  console.log(event);
+
+  // Jika sedang loading, tampilkan loading
+  if (isPending) {
+    return <div>Loading...</div>;
+  }
+
+  // Jika ada error, tampilkan pesan error
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+
+  if (!event || !event.tickets) {
+    return <div>No event found!</div>;
+  }
+  const tickets =
+    event?.tickets.map((ticket) => ({
+      id: ticket.id,
+      type: ticket.type,
+      price: ticket.price,
+      totalSeat: ticket.totalSeat,
+    })) || [];
 
   return (
     <div className="bg-background min-h-screen">
@@ -47,8 +58,8 @@ const EventDetailPage: FC<EventDetail> = ({ slug }) => {
           <div className="lg:col-span-2">
             <div className="overflow-hidden rounded-lg">
               <Image
-                src={event?.thumbnail || "/placeholder.svg"}
-                alt={event?.thumbnail || "/placeholder.svg"}
+                src={event?.thumbnail || "/PlaceHolder.png"}
+                alt="placeholder"
                 width={1000}
                 height={500}
                 className="w-full object-cover"
@@ -56,114 +67,59 @@ const EventDetailPage: FC<EventDetail> = ({ slug }) => {
             </div>
 
             <div className="mt-6">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge>{event?.category}</Badge>
-                <div className="text-muted-foreground flex items-center text-sm">
-                  <Users className="mr-1 h-4 w-4" />
-                  <span>{event?.availableSeats} seats available</span>
-                </div>
-              </div>
-
               <h1 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">
                 {event?.name}
               </h1>
 
-              <div className="text-muted-foreground mt-4 flex flex-col gap-2 sm:flex-row sm:gap-6">
-                <div className="flex items-center">
-                  <Calendar className="mr-2 h-5 w-5" />
-                  <span>{event?.startDate}</span>
-                </div>
-                <div className="flex items-center">
-                  <Clock className="mr-2 h-5 w-5" />
-                  <span>{event?.startDate}</span>
-                </div>
-                <div className="flex items-center">
-                  <MapPin className="mr-2 h-5 w-5" />
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge>{event?.category}</Badge>
+                <div className="text-muted-foreground flex items-center text-sm">
+                  <MapPin className="mr-1 h-4 w-4" />
                   <span>{event?.location}</span>
                 </div>
-              </div>
-
-              {/* <div className="mt-4 flex items-center">
-                <div className="flex items-center">
-                  <Image
-                    src={event.thumbnail || "/placeholder.svg"}
-                    alt={event.name}
-                    width={40}
-                    height={40}
-                    className="rounded-full"
-                  />
-                  <div className="ml-2">
-                    <p className="text-sm font-medium">
-                      {event.name}
-                    </p>
-                    <div className="flex items-center">
-                      <Star className="mr-1 h-3 w-3 fill-amber-500 text-amber-500" />
-                      <span className="text-xs">
-                        {event.organizer.rating} • {event.organizer.eventCount}{" "}
-                        events
-                      </span>
-                    </div>
-                  </div>
+                <div className="text-muted-foreground mt-2 flex items-center text-sm">
+                  <Calendar className="mr-1 h-4 w-4" />
                 </div>
-                <Link
-                  href={`/organizers/${event.organizer.id}`}
-                  className="ml-auto"
-                >
-                  <Button variant="outline" size="sm">
-                    View Organizer
-                  </Button>
-                </Link>
-              </div> */}
+              </div>
 
               <Tabs defaultValue="details" className="mt-6">
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="details">Details</TabsTrigger>
+                  <TabsTrigger value="tickets">Tickets</TabsTrigger>
                   <TabsTrigger value="location">Location</TabsTrigger>
-                  <TabsTrigger value="reviews">Reviews</TabsTrigger>
                 </TabsList>
+
                 <TabsContent value="details" className="mt-4 space-y-4">
-                  <div className="prose dark:prose-invert max-w-none">
-                    <p>{event?.description}</p>
-                  </div>
+                  <Markdown content={event?.description || ""} />
                 </TabsContent>
-                <TabsContent value="location" className="mt-4">
-                  <div className="bg-muted/50 rounded-lg border p-4">
-                    <h3 className="font-medium">{event?.location}</h3>
-                    <p className="text-muted-foreground text-sm">
-                      {event?.location}
-                    </p>
-                    <div className="bg-muted mt-4 aspect-video w-full overflow-hidden rounded-md">
-                      <Image
-                        src="/placeholder.svg?height=300&width=600"
-                        alt="Map"
-                        width={600}
-                        height={300}
-                        className="h-full w-full object-cover"
+
+                <TabsContent value="tickets" className="mt-4 space-y-4">
+                  <h3 className="text-lg font-bold">Ticket Types</h3>
+                  {tickets.map((ticket, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between border-b py-2"
+                    >
+                      <div>
+                        <p className="font-medium">{ticket.type}</p>
+                        <p className="text-muted-foreground text-sm">
+                          {formatCurrency(ticket.price)} per ticket
+                        </p>
+                      </div>
+                      <input
+                        type="number"
+                        min="1"
+                        max={ticket.totalSeat}
+                        placeholder="Qty"
+                        className="w-16 rounded-md border p-1"
                       />
                     </div>
-                  </div>
+                  ))}
                 </TabsContent>
-                {/* <TabsContent value="reviews" className="mt-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center">
-                        <Star className="h-5 w-5 fill-amber-500 text-amber-500" />
-                        <span className="ml-1 font-medium">
-                          {event.organizer.rating}
-                        </span>
-                      </div>
-                      <span className="text-muted-foreground text-sm">
-                        Based on {event.reviews.length} reviews
-                      </span>
-                    </div>
-                  </div>
-                  <Separator />
-                  <div className="space-y-4">
-                    {event.reviews.map((review) => (
-                      <ReviewCard key={review.id} review={review} />
-                    ))}
-                  </div>
-                </TabsContent> */}
+
+                <TabsContent value="location" className="mt-4">
+                  <p>{event?.location}</p>
+                </TabsContent>
               </Tabs>
             </div>
           </div>
@@ -171,19 +127,10 @@ const EventDetailPage: FC<EventDetail> = ({ slug }) => {
           <div className="lg:row-start-1">
             <div className="bg-card sticky top-20 rounded-lg border p-4 shadow-sm">
               <div className="mb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-muted-foreground text-sm font-medium">
-                    Price starts from
-                  </p>
-                  <p className="text-2xl font-bold">{event?.price}</p>
-                </div>
-                <div className="text-muted-foreground flex items-center text-sm">
-                  <Tag className="mr-1 h-4 w-4" />
-                  <span>{event?.availableSeats} seats left</span>
-                </div>
+                <h4 className="text-lg font-medium">Order Summary</h4>
               </div>
 
-              {/* <TicketSelection tickets={event.ticketTypes} /> */}
+              <TicketSelection tickets={tickets} />
 
               <div className="mt-6 space-y-2">
                 <Button className="w-full">Buy Tickets</Button>

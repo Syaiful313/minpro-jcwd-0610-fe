@@ -8,11 +8,16 @@ import { CreateEventSchema } from "../schema";
 import { ChangeEvent, useRef, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import TiptapRichTextEditor from "@/components/TiptapRichEditor";
 
 import { toast } from "sonner";
-
 
 interface Ticket {
   name: string;
@@ -42,17 +47,44 @@ interface FormValues {
 
 const categories = ["Sports", "Festivals", "Concerts", "Theater"];
 const locations = [
-  "ACEH", "SUMATERA_UTARA", "SUMATERA_BARAT", "RIAU", "JAMBI",
-  "SUMATERA_SELATAN", "BENGKULU", "LAMPUNG", "KEPULAUAN_BANGKA_BELITUNG",
-  "KEPULAUAN_RIAU", "DKI_JAKARTA", "JAWA_BARAT", "JAWA_TENGAH",
-  "DI_YOGYAKARTA", "JAWA_TIMUR", "BANTEN", "BALI",
-  "NUSA_TENGGARA_BARAT", "NUSA_TENGGARA_TIMUR", "KALIMANTAN_BARAT",
-  "KALIMANTAN_TENGAH", "KALIMANTAN_SELATAN", "KALIMANTAN_TIMUR",
-  "KALIMANTAN_UTARA", "SULAWESI_UTARA", "SULAWESI_TENGAH",
-  "SULAWESI_SELATAN", "SULAWESI_TENGGARA", "GORONTALO",
-  "SULAWESI_BARAT", "MALUKU", "MALUKU_UTARA", "PAPUA",
-  "PAPUA_BARAT", "PAPUA_TENGAH", "PAPUA_PEGUNUNGAN",
-  "PAPUA_SELATAN", "PAPUA_BARAT_DAYA"
+  "ACEH",
+  "SUMATERA_UTARA",
+  "SUMATERA_BARAT",
+  "RIAU",
+  "JAMBI",
+  "SUMATERA_SELATAN",
+  "BENGKULU",
+  "LAMPUNG",
+  "KEPULAUAN_BANGKA_BELITUNG",
+  "KEPULAUAN_RIAU",
+  "DKI_JAKARTA",
+  "JAWA_BARAT",
+  "JAWA_TENGAH",
+  "DI_YOGYAKARTA",
+  "JAWA_TIMUR",
+  "BANTEN",
+  "BALI",
+  "NUSA_TENGGARA_BARAT",
+  "NUSA_TENGGARA_TIMUR",
+  "KALIMANTAN_BARAT",
+  "KALIMANTAN_TENGAH",
+  "KALIMANTAN_SELATAN",
+  "KALIMANTAN_TIMUR",
+  "KALIMANTAN_UTARA",
+  "SULAWESI_UTARA",
+  "SULAWESI_TENGAH",
+  "SULAWESI_SELATAN",
+  "SULAWESI_TENGGARA",
+  "GORONTALO",
+  "SULAWESI_BARAT",
+  "MALUKU",
+  "MALUKU_UTARA",
+  "PAPUA",
+  "PAPUA_BARAT",
+  "PAPUA_TENGAH",
+  "PAPUA_PEGUNUNGAN",
+  "PAPUA_SELATAN",
+  "PAPUA_BARAT_DAYA",
 ];
 
 const ticketTypes = ["REGULER", "VIP", "VVIP"];
@@ -70,40 +102,34 @@ const CreateEventForm = () => {
       startDate: "",
       endDate: "",
 
-      tickets: [{ name: '', price: '', quantity: '' }], 
+      tickets: [{ name: "", price: "", quantity: "" }],
 
-      vouchers: []
+      vouchers: [],
     },
     validationSchema: CreateEventSchema,
     onSubmit: async (values) => {
+      const formattedTickets = values.tickets.map((ticket) => ({
+        name: ticket.name || "",
 
-     
-        const formattedTickets = values.tickets.map(ticket => ({
-          name: ticket.name || '', 
+        price: Number(ticket.price) || 0,
+        quantity: Number(ticket.quantity) || 0,
+      }));
 
-    
-          price: Number(ticket.price) || 0,
-          quantity: Number(ticket.quantity) || 0
-        }));
+      const formattedVouchers = values.vouchers.map((voucher) => ({
+        code: voucher.code || "",
+        discount: Number(voucher.discount) || 0,
+        startDate: voucher.startDate,
+        endDate: voucher.endDate,
+      }));
 
-        const formattedVouchers = values.vouchers.map(voucher => ({
-          code: voucher.code || '',
-          discount: Number(voucher.discount) || 0,
-          startDate: voucher.startDate,
-          endDate: voucher.endDate
-        }));
+      const eventPayload = {
+        ...values,
+        tickets: JSON.stringify(formattedTickets),
+        vouchers: JSON.stringify(formattedVouchers),
+      };
 
-        const eventPayload = {
-          ...values,
-          tickets: JSON.stringify(formattedTickets),
-          vouchers: JSON.stringify(formattedVouchers)
-        };
-
-        console.log("Formatted Payload:", eventPayload);
-         createEvent(eventPayload);
-     
-
-       
+      console.log("Formatted Payload:", eventPayload);
+      createEvent(eventPayload);
     },
   });
 
@@ -125,17 +151,23 @@ const CreateEventForm = () => {
     }
   };
 
+  const addTicket = () =>
+    formik.setFieldValue("tickets", [
+      ...formik.values.tickets,
+      { name: "", price: "", quantity: "" },
+    ]);
 
-  const addTicket = () => formik.setFieldValue("tickets", [...formik.values.tickets, { name: '', price: '', quantity: '' }]); 
-
-  
   const removeTicket = (index: number) => {
     const newTickets = [...formik.values.tickets];
     newTickets.splice(index, 1);
     formik.setFieldValue("tickets", newTickets);
   };
 
-  const addVoucher = () => formik.setFieldValue("vouchers", [...formik.values.vouchers, { code: '', discount: '', startDate: '', endDate: '' }]);
+  const addVoucher = () =>
+    formik.setFieldValue("vouchers", [
+      ...formik.values.vouchers,
+      { code: "", discount: "", startDate: "", endDate: "" },
+    ]);
 
   const removeVoucher = (index: number) => {
     const newVouchers = [...formik.values.vouchers];
@@ -145,7 +177,7 @@ const CreateEventForm = () => {
 
   return (
     <form
-      className="mt-10 mb-20 space-y-6 max-w-2xl mx-auto bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-lg"
+      className="mx-auto mt-10 mb-20 max-w-2xl space-y-6 rounded-2xl bg-white p-6 shadow-lg dark:bg-zinc-900"
       onSubmit={formik.handleSubmit}
     >
       <div className="grid gap-2">
@@ -261,7 +293,7 @@ const CreateEventForm = () => {
             <Image
               src={selectedImage}
               alt="thumbnail"
-              className="object-cover rounded-md"
+              className="rounded-md object-cover"
               fill
             />
           </div>
@@ -292,10 +324,10 @@ const CreateEventForm = () => {
         {formik.values.tickets.map((ticket, index) => (
           <div key={index} className="grid gap-2">
             <Select
-              value={ticket.name} 
+              value={ticket.name}
               onValueChange={(value) => {
                 const newTickets = [...formik.values.tickets];
-                newTickets[index].name = value; 
+                newTickets[index].name = value;
 
                 formik.setFieldValue("tickets", newTickets);
               }}
@@ -402,15 +434,10 @@ const CreateEventForm = () => {
 
       <div className="flex justify-end">
         <Button
-
           type="submit"
-          className="bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white"
+          className="bg-gradient-to-r from-violet-500 to-indigo-500 text-white hover:from-violet-600 hover:to-indigo-600"
           disabled={isPending}
-          onClick={() => {
-            
-          }}
-          
-
+          onClick={() => {}}
         >
           {isPending ? "Creating..." : "Create"}
         </Button>
@@ -420,5 +447,3 @@ const CreateEventForm = () => {
 };
 
 export default CreateEventForm;
-
-
