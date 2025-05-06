@@ -1,5 +1,3 @@
-// src/hooks/api/dashboard-organizer/useGetOrganizerDashboardData.ts
-
 import useAxios from "@/hooks/useAxios";
 import { useQuery } from "@tanstack/react-query";
 
@@ -19,12 +17,12 @@ interface OrganizerDashboardResponse {
 
 const useGetOrganizerDashboardData = () => {
   const { axiosInstance } = useAxios();
-  
+
   return useQuery({
     queryKey: ["organizer-dashboard"],
     queryFn: async () => {
       const { data } = await axiosInstance.get<OrganizerDashboardResponse>(
-        "/organizer/events/data"
+        "/organizer/events/data",
       );
       return data;
     },
