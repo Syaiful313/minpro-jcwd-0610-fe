@@ -113,6 +113,22 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+:root {
+  --chart-1: 200, 75%, 55%; /* Biru untuk Menunggu Pembayaran */
+--chart-2: 265, 70%, 55%; /* Ungu untuk Menunggu Konfirmasi */
+--chart-3: 145, 65%, 45%; /* Hijau untuk Selesai */
+--chart-4: 354, 70%, 54%; /* Merah untuk Ditolak */
+--chart-5: 32, 85%, 55%;  /* Oranye untuk Dibatalkan */
+--chart-6: 220, 15%, 40%; /* Abu-abu untuk Kadaluarsa */
+
+--color-waiting: hsl(var(--chart-1));
+--color-confirmed: hsl(var(--chart-2));
+--color-done: hsl(var(--chart-3));
+--color-rejected: hsl(var(--chart-4));
+--color-canceled: hsl(var(--chart-5));
+--color-expired: hsl(var(--chart-6));
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
