@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -63,7 +62,6 @@ import {
   ColumnsIcon,
   Edit,
   Eye,
-  GripVerticalIcon,
   MoreVerticalIcon,
   Trash2,
   Users,
@@ -72,6 +70,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
+import CreateEventModal from "./CreateEventModal";
 
 interface Event {
   id: number;
@@ -82,23 +81,6 @@ interface Event {
   startDate: string;
   endDate: string;
   slug: string;
-}
-
-function DragHandle({ id }: { id: number }) {
-  const { attributes, listeners } = useSortable({ id });
-
-  return (
-    <Button
-      {...attributes}
-      {...listeners}
-      variant="ghost"
-      size="icon"
-      className="text-muted-foreground size-7 hover:bg-transparent"
-    >
-      <GripVerticalIcon className="text-muted-foreground size-3" />
-      <span className="sr-only">Drag to reorder</span>
-    </Button>
-  );
 }
 
 function DraggableRow({ row }: { row: Row<Event> }) {
@@ -367,22 +349,7 @@ export function EventsTable() {
             className="w-full md:max-w-md"
           />
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => router.push("/dashboard/events/create")}
-              className="flex items-center gap-2"
-            >
-              <span className="hidden sm:inline">Create</span> Event
-            </Button>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => router.push("/dashboard/events/create")}
-              className="flex items-center gap-2"
-            >
-              <span className="hidden sm:inline">Create</span> Promotion
-            </Button>
+            <CreateEventModal triggerButtonText="Create Event" />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="ml-auto">
@@ -493,7 +460,6 @@ export function EventsTable() {
             </div>
           </DndContext>
 
-          {/* Pagination - responsive design */}
           {eventsData && eventsData.meta && (
             <div className="border-t p-2 md:p-4">
               <PaginationSection

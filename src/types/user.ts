@@ -1,3 +1,5 @@
+import { Organizer } from "./organizer";
+
 export interface User{
     id: number;
     fullName: string;
@@ -11,4 +13,5 @@ export interface User{
     expirationDate: Date | null |string;
     createdAt: Date;
     updatedAt: Date;
+    organizerId: Organizer[]
 }

@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import useGetOrganizerTransactions from "@/hooks/api/dasboard-organizer/useGetOrganizerTransactions";
+import useGetOrganizerTransactions, { TransactionWithDetails } from "@/hooks/api/dasboard-organizer/useGetOrganizerTransactions";
 import useUpdateTransaction from "@/hooks/api/dasboard-organizer/useUpdateTransaction";
 import { formatCurrency } from "@/lib/utils";
 import { TransactionStatus } from "@/types/enums";
@@ -37,31 +37,16 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { CheckCircle, ChevronDownIcon, FileText, MoreVerticalIcon, XCircle } from "lucide-react";
+import {
+  CheckCircle,
+  ChevronDownIcon,
+  FileText,
+  MoreVerticalIcon,
+  XCircle,
+} from "lucide-react";
 import Image from "next/image";
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
-
-interface TransactionRow {
-  id: number;
-  user: {
-    fullName: string;
-    email: string;
-  };
-  event: {
-    name: string;
-    startDate: string;
-  };
-  ticketType: {
-    name: string;
-    price: number;
-  } | null;
-  quantity: number;
-  totalPrice: number;
-  status: TransactionStatus;
-  paymentProofUrl: string;
-  createdAt: string;
-}
 
 function getStatusBadgeVariant(status: TransactionStatus) {
   switch (status) {
@@ -108,18 +93,18 @@ export function TransactionTable() {
   const [pageSize] = React.useState(10);
   const [selectedStatus, setSelectedStatus] = useState<TransactionStatus | "ALL">("ALL");
   const [columnVisibility, setColumnVisibility] = React.useState({});
-  // Add flag to prevent repeated page resets
+
   const [skipPageReset, setSkipPageReset] = useState(false);
 
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [selectedProofUrl, setSelectedProofUrl] = useState<string | null>(null);
-  
-  // Dialog for transaction confirmation
+
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState<number | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<number | null>(
+    null,
+  );
 
-  // Using created hooks
   const updateTransactionMutation = useUpdateTransaction();
 
   const {
@@ -135,23 +120,21 @@ export function TransactionTable() {
     sortOrder: "desc",
   });
 
-  // Memoize data to avoid unnecessary re-renders
-  const memoizedData = useMemo(() => transactionsData?.data || [], [transactionsData]);
+  const memoizedData = useMemo(
+    () => transactionsData?.data || [],
+    [transactionsData],
+  );
 
-  // Effect to handle filter changes without causing a loop
   useEffect(() => {
-    // Avoid repeated page resets by adding a flag
     setSkipPageReset(true);
-    
-    // Reset timeout to avoid conflicts
+
     const timeoutId = setTimeout(() => {
       setSkipPageReset(false);
     }, 100);
-    
+
     return () => clearTimeout(timeoutId);
   }, [transactionsData]);
 
-  // Effect to reset page when filter changes
   useEffect(() => {
     if (currentPage !== 1) {
       setCurrentPage(1);
@@ -181,179 +164,213 @@ export function TransactionTable() {
     setIsPreviewDialogOpen(true);
   };
 
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    // Don't set currentPage here, as it will be handled by useEffect
-  }, []);
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value);
+    },
+    [],
+  );
 
-  const handleStatusChange = useCallback((status: TransactionStatus | "ALL") => {
-    setSelectedStatus(status);
-    // Don't set currentPage here, as it will be handled by useEffect
-  }, []);
+  const handleStatusChange = useCallback(
+    (status: TransactionStatus | "ALL") => {
+      setSelectedStatus(status);
+    },
+    [],
+  );
 
-  // Function to handle transaction confirmation
   const handleConfirmTransaction = useCallback((transactionId: number) => {
     setSelectedTransaction(transactionId);
     setIsConfirmDialogOpen(true);
   }, []);
 
-  // Function to handle transaction rejection
   const handleRejectTransaction = useCallback((transactionId: number) => {
     setSelectedTransaction(transactionId);
     setIsRejectDialogOpen(true);
   }, []);
 
-  // Function to execute transaction confirmation
   const confirmTransaction = useCallback(() => {
     if (selectedTransaction) {
       updateTransactionMutation.mutate({
         transactionId: selectedTransaction,
-        isAccepted: true
+        isAccepted: true,
       });
       setIsConfirmDialogOpen(false);
     }
   }, [selectedTransaction, updateTransactionMutation]);
 
-  // Function to execute transaction rejection
   const rejectTransaction = useCallback(() => {
     if (selectedTransaction) {
       updateTransactionMutation.mutate({
         transactionId: selectedTransaction,
-        isRejected: true
+        isRejected: true,
       });
       setIsRejectDialogOpen(false);
     }
   }, [selectedTransaction, updateTransactionMutation]);
 
-  const columns: ColumnDef<TransactionRow>[] = useMemo(() => [
-    {
-      accessorKey: "index",
-      header: () => <div className="text-center">No.</div>,
-      cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
-    },
-    {
-      accessorKey: "user.fullName",
-      header: () => <div className="text-left">Customer</div>,
-      cell: ({ row }) => (
-        <div className="flex flex-col">
-          <div className="font-medium">{row.original.user.fullName}</div>
-          <div className="text-muted-foreground text-sm">
-            {row.original.user.email}
+  const columns: ColumnDef<TransactionWithDetails>[] = useMemo(
+    () => [
+      {
+        accessorKey: "index",
+        header: () => <div className="text-center">No.</div>,
+        cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
+      },
+      {
+        accessorKey: "user.fullName",
+        header: () => <div className="text-left">Customer</div>,
+        cell: ({ row }) => (
+          <div className="flex flex-col">
+            <div className="font-medium">{row.original.user.fullName}</div>
+            <div className="text-muted-foreground text-sm">
+              {row.original.user.email}
+            </div>
           </div>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "event.name",
-      header: () => <div className="text-left">Event</div>,
-      cell: ({ row }) => (
-        <div className="max-w-64 truncate font-medium">
-          {row.original.event.name}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "ticketType.name",
-      header: () => <div className="text-left">Ticket Type</div>,
-      cell: ({ row }) => (
-        <div className="text-muted-foreground">
-          {row.original.ticketType?.name || "N/A"}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "quantity",
-      header: () => <div className="text-center">Qty</div>,
-      cell: ({ row }) => (
-        <div className="text-center">{row.original.quantity}</div>
-      ),
-    },
-    {
-      accessorKey: "totalPrice",
-      header: () => <div className="text-right">Total</div>,
-      cell: ({ row }) => (
-        <div className="text-right font-medium">
-          {formatCurrency(row.original.totalPrice)}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "status",
-      header: () => <div className="text-center">Status</div>,
-      cell: ({ row }) => (
-        <div className="flex justify-center">
-          <Badge variant={getStatusBadgeVariant(row.original.status)}>
-            {getStatusLabel(row.original.status)}
-          </Badge>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "createdAt",
-      header: () => <div className="text-center">Date</div>,
-      cell: ({ row }) => (
-        <div className="text-muted-foreground text-center">
-          {formatDate(row.original.createdAt)}
-        </div>
-      ),
-    },
-    {
-      id: "actions",
-      header: () => <div className="text-center">Actions</div>,
-      cell: ({ row }) => (
-        <div className="flex justify-center">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="text-muted-foreground data-[state=open]:bg-muted flex size-8"
-                size="icon"
-              >
-                <MoreVerticalIcon className="h-4 w-4" />
-                <span className="sr-only">Open menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem
-                className="flex items-center gap-2"
-                onClick={() => handleViewProof(row.original.paymentProofUrl)}
-              >
-                <FileText className="h-4 w-4" /> View Payment Proof
-              </DropdownMenuItem>
-              
-              {/* Only show these options if transaction status is WAITING_FOR_ADMIN_CONFIRMATION */}
-              {row.original.status === TransactionStatus.WAITING_FOR_ADMIN_CONFIRMATION && (
-                <>
+        ),
+      },
+      {
+        accessorKey: "event.name",
+        header: () => <div className="text-left">Event</div>,
+        cell: ({ row }) => (
+          <div className="max-w-64 truncate font-medium">
+            {row.original.event.name}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "ticketTypes",
+        header: () => <div className="text-left">Ticket Type</div>,
+        cell: ({ row }) => {
+          // Handle both old and new data structure
+          if (row.original.transactionsDetails && row.original.transactionsDetails.length > 0) {
+            // Use new data structure
+            const ticketTypeNames = row.original.transactionsDetails.map(
+              detail => detail.ticketType.name
+            );
+            return (
+              <div className="text-muted-foreground">
+                {ticketTypeNames.join(", ")}
+              </div>
+            );
+          } else if (row.original.ticketTypeId) {
+            // Fall back to old data structure if available
+            return (
+              <div className="text-muted-foreground">
+                {row.original.ticketType?.name || "N/A"}
+              </div>
+            );
+          } else {
+            return <div className="text-muted-foreground">N/A</div>;
+          }
+        },
+      },
+      {
+        accessorKey: "quantity",
+        header: () => <div className="text-center">Qty</div>,
+        cell: ({ row }) => {
+          // Handle both old and new data structure
+          if (row.original.transactionsDetails && row.original.transactionsDetails.length > 0) {
+            // Use new data structure
+            const totalQuantity = row.original.transactionsDetails.reduce(
+              (sum, detail) => sum + detail.quantity, 
+              0
+            );
+            return <div className="text-center">{totalQuantity}</div>;
+          } else {
+            // Fall back to old data structure
+            return <div className="text-center">{row.original.quantity || 0}</div>;
+          }
+        },
+      },
+      {
+        accessorKey: "totalPrice",
+        header: () => <div className="text-right">Total</div>,
+        cell: ({ row }) => (
+          <div className="text-right font-medium">
+            {formatCurrency(row.original.totalPrice)}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "status",
+        header: () => <div className="text-center">Status</div>,
+        cell: ({ row }) => (
+          <div className="flex justify-center">
+            <Badge variant={getStatusBadgeVariant(row.original.status)}>
+              {getStatusLabel(row.original.status)}
+            </Badge>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "createdAt",
+        header: () => <div className="text-center">Date</div>,
+        cell: ({ row }) => (
+          <div className="text-muted-foreground text-center">
+            {formatDate(row.original.createdAt)}
+          </div>
+        ),
+      },
+      {
+        id: "actions",
+        header: () => <div className="text-center">Actions</div>,
+        cell: ({ row }) => (
+          <div className="flex justify-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="text-muted-foreground data-[state=open]:bg-muted flex size-8"
+                  size="icon"
+                >
+                  <MoreVerticalIcon className="h-4 w-4" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {row.original.paymentProofUrl && (
                   <DropdownMenuItem
-                    className="flex items-center gap-2 text-green-600"
-                    onClick={() => handleConfirmTransaction(row.original.id)}
+                    className="flex items-center gap-2"
+                    onClick={() => handleViewProof(row.original.paymentProofUrl!)}
                   >
-                    <CheckCircle className="h-4 w-4" /> Accept Transaction
+                    <FileText className="h-4 w-4" /> View Payment Proof
                   </DropdownMenuItem>
-                  
-                  <DropdownMenuItem
-                    className="flex items-center gap-2 text-red-600"
-                    onClick={() => handleRejectTransaction(row.original.id)}
-                  >
-                    <XCircle className="h-4 w-4" /> Reject Transaction
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      ),
-    },
-  ], [handleConfirmTransaction, handleRejectTransaction]);
+                )}
 
-  // Improved table configuration
+                {/* Only show these options if transaction status is WAITING_FOR_ADMIN_CONFIRMATION */}
+                {row.original.status ===
+                  TransactionStatus.WAITING_FOR_ADMIN_CONFIRMATION && (
+                  <>
+                    <DropdownMenuItem
+                      className="flex items-center gap-2 text-green-600"
+                      onClick={() => handleConfirmTransaction(row.original.id)}
+                    >
+                      <CheckCircle className="h-4 w-4" /> Accept Transaction
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      className="flex items-center gap-2 text-red-600"
+                      onClick={() => handleRejectTransaction(row.original.id)}
+                    >
+                      <XCircle className="h-4 w-4" /> Reject Transaction
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ),
+      },
+    ],
+    [handleConfirmTransaction, handleRejectTransaction],
+  );
+
   const table = useReactTable({
     data: memoizedData,
     columns,
     state: {
       columnVisibility,
     },
-    // Disable autoResetPageIndex to avoid loops
+
     autoResetPageIndex: !skipPageReset,
     getRowId: (row) => row.id.toString(),
     onColumnVisibilityChange: setColumnVisibility,
@@ -547,8 +564,8 @@ export function TransactionTable() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Transaction</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to accept this transaction? 
-              This action cannot be undone.
+              Are you sure you want to accept this transaction? This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -572,8 +589,8 @@ export function TransactionTable() {
           <AlertDialogHeader>
             <AlertDialogTitle>Reject Transaction</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to reject this transaction?
-              This action cannot be undone and tickets will be returned to stock.
+              Are you sure you want to reject this transaction? This action
+              cannot be undone and tickets will be returned to stock.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

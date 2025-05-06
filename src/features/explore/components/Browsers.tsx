@@ -26,9 +26,7 @@ const BrowsersList = () => {
               className="w-full pl-8"
             />
           </div>
-          <Link href="/create-event">
-            <Button>Create Event</Button>
-          </Link>
+          
         </div>
       </div>
 
