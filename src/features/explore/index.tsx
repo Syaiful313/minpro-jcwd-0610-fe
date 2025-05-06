@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import BrowsersList from "./components/Browsers";
 import Navbar from "@/components/Navbar";
 
-const BrowsersPage = () => {
+const ExplorePage = () => {
   return (
     <>
       <Navbar />
@@ -13,4 +13,4 @@ const BrowsersPage = () => {
   );
 };
 
-export default BrowsersPage;
+export default ExplorePage;
