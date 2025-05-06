@@ -4,4 +4,5 @@ export interface Organizer {
   companyAddress: string;
   details: string;
   npwp: File | null;
+  acceptedAt: boolean;
 }

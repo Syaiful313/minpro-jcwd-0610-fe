@@ -45,3 +45,15 @@ export interface TransactionDataResponse {
   totalTicketsSold: number;
   totalEvents: number;
 }
+
+export interface TransactionDetail {
+  id: number;
+  transactionId: number;
+  ticketTypeId: number;
+  quantity: number;
+  ticketType: {
+    id: number;
+    name: string;
+    price: number;
+  };
+}

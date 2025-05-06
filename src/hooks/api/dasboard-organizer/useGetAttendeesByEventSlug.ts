@@ -24,9 +24,9 @@ interface GetAttendeesQuery extends PaginationQueries {
 }
 
 const useGetAttendeesByEventSlug = (
-  slug: string, 
+  slug: string,
   queries?: GetAttendeesQuery,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) => {
   const {
     page = 1,
@@ -49,7 +49,7 @@ const useGetAttendeesByEventSlug = (
             sortOrder,
             search,
           },
-        }
+        },
       );
       return data;
     },
