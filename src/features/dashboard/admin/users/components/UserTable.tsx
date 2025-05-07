@@ -24,7 +24,9 @@ import {
   SearchIcon,
   PlusIcon,
   LoaderIcon,
-  CheckIcon, // Tambahkan ikon untuk persetujuan
+  CheckIcon,
+  XIcon,
+  EyeIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -57,10 +59,9 @@ import {
 import { Label } from "@/components/ui/label";
 import { User } from "@/types/user";
 import useGetUsers from "@/hooks/api/admin/useGetUsers";
-import useUpdateRole from "@/hooks/api/admin/useUpdateRole"; // Import hook untuk update role
-import { toast } from "react-toastify"; // Import toast untuk notifikasi
+import useApproveOrganizer from "@/hooks/api/admin/useApproveOrganizer";
+import useRejectOrganizer from "@/hooks/api/admin/useRejectOrganizer";
 
-// Import komponen dialog untuk konfirmasi
 import {
   AlertDialog,
   AlertDialogAction,
@@ -72,14 +73,23 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 export function UserTable() {
-  // State untuk filter dan sorting
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
-  // State untuk pagination dan pencarian
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -87,15 +97,14 @@ export function UserTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // State untuk filter organizer
   const [organizerPending, setOrganizerPending] = useState(false);
   const [organizerApproved, setOrganizerApproved] = useState(false);
 
-  // State untuk dialog konfirmasi persetujuan
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  // Debounce search input
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -106,7 +115,6 @@ export function UserTable() {
     };
   }, [searchQuery]);
 
-  // Fetch data menggunakan custom hook
   const { data, isLoading, error } = useGetUsers({
     page: pagination.pageIndex + 1,
     take: pagination.pageSize,
@@ -117,31 +125,49 @@ export function UserTable() {
     organizerApproved,
   });
 
-  // Gunakan hook untuk mutation update role
-  const updateRoleMutation = useUpdateRole();
+  const approveMutation = useApproveOrganizer();
+  const rejectMutation = useRejectOrganizer();
 
-  // Handler untuk membuka dialog konfirmasi
-  const handleOpenConfirmDialog = (userId: number) => {
-    setSelectedUserId(userId);
-    setIsConfirmDialogOpen(true);
+  const handleOpenDetailDialog = (user: User) => {
+    setSelectedUser(user);
+    setIsDetailDialogOpen(true);
   };
 
-  // Handler untuk persetujuan organizer
+  const handleOpenApproveDialog = (user: User) => {
+    setSelectedUser(user);
+    setIsApproveDialogOpen(true);
+  };
+
+  const handleOpenRejectDialog = (user: User) => {
+    setSelectedUser(user);
+    setIsRejectDialogOpen(true);
+  };
+
   const handleApproveOrganizer = async () => {
-    if (selectedUserId) {
+    if (selectedUser) {
       try {
-        await updateRoleMutation.mutateAsync({
-          userIdTarget: selectedUserId,
+        console.log("Approving user:", selectedUser.id);
+        await approveMutation.mutateAsync({
+          userIdTarget: selectedUser.id,
         });
-        // Dialog akan ditutup on success karena refresh dari useUpdateRole
+        setIsApproveDialogOpen(false);
       } catch (error) {
-        // Error sudah ditangani di useUpdateRole
-        setIsConfirmDialogOpen(false);
+        console.error("Error in component when approving:", error);
       }
     }
   };
 
-  // Definisi kolom tabel
+  const handleRejectOrganizer = async () => {
+    if (selectedUser) {
+      try {
+        await rejectMutation.mutateAsync({
+          userIdTarget: selectedUser.id,
+        });
+        setIsRejectDialogOpen(false);
+      } catch (error) {}
+    }
+  };
+
   const columns: ColumnDef<User>[] = [
     {
       accessorKey: "index",
@@ -177,6 +203,23 @@ export function UserTable() {
       header: "Peran",
       cell: ({ row }) => <Badge variant="outline">{row.original.role}</Badge>,
     },
+
+    {
+      accessorKey: "organizer",
+      header: "Status Organizer",
+      cell: ({ row }) => {
+        const user = row.original as any;
+        if (!user.organizerId || user.organizerId.length === 0) {
+          return <span className="text-gray-400">-</span>;
+        }
+
+        return user.organizerId[0]?.acceptedAt ? (
+          <Badge variant="default">Disetujui</Badge>
+        ) : (
+          <Badge variant="destructive">Pending</Badge>
+        );
+      },
+    },
     {
       accessorKey: "createdAt",
       header: "Tgl Pendaftaran",
@@ -193,19 +236,41 @@ export function UserTable() {
       header: "Aksi",
       cell: ({ row }) => (
         <div className="flex items-center">
-          {/* Tambahkan tombol approve langsung jika organizer pending */}
-          {row.original.organizerId &&
-            !row.original.organizerId[0].acceptedAt && (
+          {/* Tombol Detail */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="mr-1 h-8 w-8 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+            onClick={() => handleOpenDetailDialog(row.original)}
+            title="Lihat Detail"
+          >
+            <EyeIcon className="h-4 w-4" />
+          </Button>
+
+          {/* Tombol Approve jika organizer pending */}
+          {row.original.organizer && !row.original.organizer.acceptedAt && (
+            <>
               <Button
                 variant="ghost"
                 size="icon"
                 className="mr-1 h-8 w-8 text-green-600 hover:bg-green-50 hover:text-green-700"
-                onClick={() => handleOpenConfirmDialog(row.original.id)}
+                onClick={() => handleOpenApproveDialog(row.original)}
                 title="Setujui Organizer"
               >
                 <CheckIcon className="h-4 w-4" />
               </Button>
-            )}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="mr-1 h-8 w-8 text-red-600 hover:bg-red-50 hover:text-red-700"
+                onClick={() => handleOpenRejectDialog(row.original)}
+                title="Tolak Organizer"
+              >
+                <XIcon className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
@@ -214,16 +279,27 @@ export function UserTable() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>Lihat Detail</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleOpenDetailDialog(row.original)}
+              >
+                Lihat Detail
+              </DropdownMenuItem>
               <DropdownMenuItem>Edit Pengguna</DropdownMenuItem>
-              {row.original.organizerId &&
-                !row.original.organizerId[0].acceptedAt && (
+              {row.original.organizer && !row.original.organizer.acceptedAt && (
+                <>
                   <DropdownMenuItem
-                    onClick={() => handleOpenConfirmDialog(row.original.id)}
+                    onClick={() => handleOpenApproveDialog(row.original)}
                   >
                     Setujui Organizer
                   </DropdownMenuItem>
-                )}
+                  <DropdownMenuItem
+                    onClick={() => handleOpenRejectDialog(row.original)}
+                    className="text-red-600"
+                  >
+                    Tolak Organizer
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive">
                 Hapus
@@ -325,7 +401,7 @@ export function UserTable() {
                         ? "Nama Lengkap"
                         : column.id === "createdAt"
                           ? "Tgl Pendaftaran"
-                          : column.id === "organizerStatus"
+                          : column.id === "organizer"
                             ? "Status Organizer"
                             : column.id}
                     </DropdownMenuCheckboxItem>
@@ -469,32 +545,262 @@ export function UserTable() {
         </div>
       </div>
 
+      {/* Dialog Detail Pengguna */}
+      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Detail Pengguna</DialogTitle>
+            <DialogDescription>
+              Informasi lengkap pengguna dan status organizer
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedUser && (
+            <Tabs defaultValue="profile" className="mt-4">
+              <TabsList>
+                <TabsTrigger value="profile">Profil Pengguna</TabsTrigger>
+                {selectedUser.organizer && (
+                  <TabsTrigger value="organizer">Data Organizer</TabsTrigger>
+                )}
+              </TabsList>
+
+              <TabsContent value="profile" className="mt-4 space-y-4">
+                <div className="flex items-start gap-4">
+                  {selectedUser.profilePicture ? (
+                    <img
+                      src={selectedUser.profilePicture}
+                      alt={selectedUser.fullName}
+                      className="h-20 w-20 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="bg-muted flex h-20 w-20 items-center justify-center rounded-full text-xl font-medium uppercase">
+                      {selectedUser.fullName.charAt(0)}
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-semibold">
+                      {selectedUser.fullName}
+                    </h3>
+                    <p className="text-muted-foreground">
+                      {selectedUser.email}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Badge>{selectedUser.role}</Badge>
+                      {selectedUser.organizer && (
+                        <Badge
+                          variant={
+                            selectedUser.organizer.acceptedAt
+                              ? "default"
+                              : "destructive"
+                          }
+                        >
+                          {selectedUser.organizer.acceptedAt
+                            ? "Organizer Disetujui"
+                            : "Organizer Pending"}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="mb-1 font-medium">Terdaftar sejak</h4>
+                    <p>
+                      {new Date(selectedUser.createdAt).toLocaleDateString(
+                        "id-ID",
+                        {
+                          day: "2-digit",
+                          month: "long",
+                          year: "numeric",
+                        },
+                      )}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="mb-1 font-medium">Point</h4>
+                    <p>{selectedUser.point}</p>
+                  </div>
+                </div>
+
+                {selectedUser.bio && (
+                  <div>
+                    <h4 className="mb-1 font-medium">Bio</h4>
+                    <p className="text-muted-foreground">{selectedUser.bio}</p>
+                  </div>
+                )}
+              </TabsContent>
+
+              {selectedUser.organizer && (
+                <TabsContent value="organizer" className="mt-4 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="mb-1 font-medium">Nama Perusahaan</h4>
+                      <p>{selectedUser.organizer.companyName}</p>
+                    </div>
+                    <div>
+                      <h4 className="mb-1 font-medium">Website</h4>
+                      <a
+                        href={selectedUser.organizer.companyWebsite}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        {selectedUser.organizer.companyWebsite}
+                      </a>
+                    </div>
+                    <div className="col-span-2">
+                      <h4 className="mb-1 font-medium">Alamat</h4>
+                      <p>{selectedUser.organizer.companyAddress}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <h4 className="mb-1 font-medium">Detail</h4>
+                      <p className="text-muted-foreground whitespace-pre-line">
+                        {selectedUser.organizer.details}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="mb-1 font-medium">Tanggal Pengajuan</h4>
+                      <p>
+                        {new Date(
+                          selectedUser.organizer.createdAt,
+                        ).toLocaleDateString("id-ID", {
+                          day: "2-digit",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="mb-1 font-medium">Status</h4>
+                      {selectedUser.organizer.acceptedAt ? (
+                        <div className="flex items-center gap-2">
+                          <Badge variant="default">Disetujui</Badge>
+                          <span className="text-muted-foreground text-sm">
+                            pada{" "}
+                            {new Date(
+                              selectedUser.organizer.acceptedAt,
+                            ).toLocaleDateString("id-ID")}
+                          </span>
+                        </div>
+                      ) : (
+                        <Badge variant="destructive">Pending</Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="mb-2 font-medium">NPWP</h4>
+                    <div className="rounded border p-2">
+                      <img
+                        src={selectedUser.organizer.npwp}
+                        alt="NPWP Document"
+                        className="mx-auto max-h-60 object-contain"
+                      />
+                    </div>
+                  </div>
+
+                  {!selectedUser.organizer.acceptedAt && (
+                    <div className="mt-4 flex justify-end gap-2">
+                      <Button
+                        variant="destructive"
+                        onClick={() => {
+                          setIsDetailDialogOpen(false);
+                          handleOpenRejectDialog(selectedUser);
+                        }}
+                      >
+                        <XIcon className="mr-2 h-4 w-4" />
+                        Tolak Permohonan
+                      </Button>
+                      <Button
+                        variant="default"
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => {
+                          setIsDetailDialogOpen(false);
+                          handleOpenApproveDialog(selectedUser);
+                        }}
+                      >
+                        <CheckIcon className="mr-2 h-4 w-4" />
+                        Setujui Permohonan
+                      </Button>
+                    </div>
+                  )}
+                </TabsContent>
+              )}
+            </Tabs>
+          )}
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Tutup</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Dialog konfirmasi persetujuan organizer */}
       <AlertDialog
-        open={isConfirmDialogOpen}
-        onOpenChange={setIsConfirmDialogOpen}
+        open={isApproveDialogOpen}
+        onOpenChange={setIsApproveDialogOpen}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Setujui Permintaan Organizer</AlertDialogTitle>
             <AlertDialogDescription>
-              Apakah Anda yakin ingin menyetujui permintaan ini? Pengguna akan
-              mendapatkan peran Organizer dan akses ke fitur organizer.
+              Apakah Anda yakin ingin menyetujui permintaan dari{" "}
+              <strong>{selectedUser?.fullName}</strong>? Pengguna akan
+              mendapatkan peran Organizer dan akses ke fitur pembuatan event.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleApproveOrganizer}
-              disabled={updateRoleMutation.isPending}
+              disabled={approveMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
             >
-              {updateRoleMutation.isPending ? (
+              {approveMutation.isPending ? (
                 <span className="flex items-center gap-2">
                   <LoaderIcon className="h-4 w-4 animate-spin" />
                   Memproses...
                 </span>
               ) : (
                 "Setujui"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog konfirmasi penolakan organizer */}
+      <AlertDialog
+        open={isRejectDialogOpen}
+        onOpenChange={setIsRejectDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tolak Permintaan Organizer</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menolak permintaan dari{" "}
+              <strong>{selectedUser?.fullName}</strong>? Permohonan organizer
+              akan dihapus dan pengguna akan menerima notifikasi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRejectOrganizer}
+              disabled={rejectMutation.isPending}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {rejectMutation.isPending ? (
+                <span className="flex items-center gap-2">
+                  <LoaderIcon className="h-4 w-4 animate-spin" />
+                  Memproses...
+                </span>
+              ) : (
+                "Tolak"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
