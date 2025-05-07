@@ -11,10 +11,23 @@ export interface Voucher {
   discount: number;
   startDate: string;
   endDate: string;
+  maxUsage: number;
 }
 
+export interface Review {
+  id: number;
+  rating: number;
+  review: string;
+}
+
+export interface Transaction {
+  id: number;
+  userId: number;
+  status: string;
+}
 export interface Event {
   id: number;
+  userId: number;
   slug: string;
   name: string;
   description: string;
@@ -25,8 +38,10 @@ export interface Event {
   price: number;
   availableSeats: number;
   category: string;
-  tickets: Ticket[]; // Updated from tickets to ticket_types
-  vouchers: Voucher[]; // Added vouchers
+  tickets: Ticket[]; 
+  vouchers: Voucher[]; 
   createdAt: string;
   updatedAt: string;
+  reviews: Review[];
+  transactions: Transaction[];
 }

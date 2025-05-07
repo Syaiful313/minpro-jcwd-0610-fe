@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 import { Minus, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { formatCurrency } from "@/lib/utils";
 import useTransaction from "@/hooks/api/transaction/useTransaction";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import { Button } from "./ui/button";
+import { Label } from "./ui/label";
+import { Input } from "./ui/input";
+import { Checkbox } from "./ui/checkbox";
+import { Separator } from "./ui/separator";
 
 interface Ticket {
   id: number;
@@ -22,26 +25,26 @@ interface TicketSelectionProps {
 }
 
 export function TicketSelection({ tickets }: TicketSelectionProps) {
-  const [selectedTickets, setSelectedTickets] = useState<
-    Record<number, number>
-  >({});
+  const [selectedTickets, setSelectedTickets] = useState<Record<number, number>>({});
   const [usePoints, setUsePoints] = useState(false);
   const [voucherCode, setVoucherCode] = useState("");
-  const [couponCode, setCouponCode] = useState(""); // Jika kamu punya fitur coupon
+  const [couponCode, setCouponCode] = useState("");
 
   const userPoints = 20000;
 
-  const totalAmount = Object.entries(selectedTickets).reduce(
-    (total, [id, quantity]) => {
-      const ticket = tickets.find((t) => t.id === Number(id));
-      return total + (ticket?.price || 0) * quantity;
-    },
-    0,
-  );
+  const router = useRouter();
 
+  // Hitung total harga tiket
+  const totalAmount = Object.entries(selectedTickets).reduce((total, [id, quantity]) => {
+    const ticket = tickets.find((t) => t.id === Number(id));
+    return total + (ticket?.price || 0) * quantity;
+  }, 0);
+
+  // Diskon poin
   const pointsDiscount = usePoints ? Math.min(userPoints, totalAmount) : 0;
-  const total = totalAmount - pointsDiscount;
+  const finalTotal = totalAmount - pointsDiscount;
 
+  // Gunakan hook useTransaction
   const { createTransaction, loading, error } = useTransaction();
 
   const handleIncrement = (id: number) => {
@@ -71,23 +74,36 @@ export function TicketSelection({ tickets }: TicketSelectionProps) {
     setVoucherCode(e.target.value);
   };
 
-  const handleApplyVoucher = () => {
-    // Saat ini hanya placeholder, tidak ada aksi
-    console.log("Menerapkan voucher:", voucherCode);
-  };
-
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     const details = Object.entries(selectedTickets).map(([id, quantity]) => ({
       ticketTypeId: Number(id),
       quantity,
     }));
+    
+    try {
+      // Gunakan createTransaction dari hook
+      const transactionId = await createTransaction({
+        details,
+        voucherCode,
+        couponCode,
+        usePoints,
+      });
+      console.log(details);
 
-    createTransaction({
-      details,
-      voucherCode,
-      couponCode,
-      usePoints,
-    });
+      // Redirect ke halaman checkout
+      if (transactionId) {
+        router.push(`/transaction/checkout/${transactionId}`);
+      }
+    } catch (err: any) {
+      // Tangani error
+      if (err.message.includes("401")) {
+        toast.error("Anda harus login untuk melakukan transaksi.");
+      } else {
+        toast.error("Gagal membuat transaksi. Silakan coba lagi.");
+      }
+
+      console.error("Checkout gagal:", err);
+    }
   };
 
   return (
@@ -133,11 +149,10 @@ export function TicketSelection({ tickets }: TicketSelectionProps) {
           </div>
         ))}
 
-        {/* 🔁 Bagian voucher diperbarui: tambahkan hint */}
+        {/* Bagian voucher */}
         <div>
           <Label htmlFor="voucher">Kode Voucher</Label>
           <div className="mt-1.5 flex flex-col gap-2">
-            {/* ✅ Tambahkan feedback sederhana jika voucher dimasukkan */}
             <Input
               value={voucherCode}
               onChange={handleVoucherChange}
@@ -180,16 +195,12 @@ export function TicketSelection({ tickets }: TicketSelectionProps) {
         )}
         <div className="flex justify-between font-bold">
           <span>Total</span>
-          <span>{formatCurrency(total)}</span>
+          <span>{formatCurrency(finalTotal)}</span>
         </div>
       </div>
 
       {/* Tombol Checkout */}
-      <Button
-        className="mt-6 w-full"
-        onClick={handleCheckout}
-        disabled={loading}
-      >
+      <Button className="mt-6 w-full" onClick={handleCheckout} disabled={loading}>
         {loading ? "Memproses..." : "Checkout"}
       </Button>
 

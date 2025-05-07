@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EventList from "@/components/EventList";
 import HeroSectionEvent from "@/features/home/components/Event";
+import { PaginationPrevious } from "@/components/ui/pagination";
+import PaginationSection from "@/components/PaginationSection";
 
 const BrowsersList = () => {
   return (
@@ -33,29 +35,11 @@ const BrowsersList = () => {
       <Tabs defaultValue="all" className="mb-8">
         <TabsList>
           <TabsTrigger value="all">All Events</TabsTrigger>
-          <TabsTrigger value="today">Today</TabsTrigger>
-          <TabsTrigger value="weekend">This Weekend</TabsTrigger>
-          <TabsTrigger value="free">Free</TabsTrigger>
-          <TabsTrigger value="music">Music</TabsTrigger>
-          <TabsTrigger value="art">Art & Culture</TabsTrigger>
+          
         </TabsList>
         <TabsContent value="all">
           <HeroSectionEvent />
-        </TabsContent>
-        <TabsContent value="today">
-          <EventList filter="today" />
-        </TabsContent>
-        <TabsContent value="weekend">
-          <EventList filter="weekend" />
-        </TabsContent>
-        <TabsContent value="free">
-          <EventList filter="free" />
-        </TabsContent>
-        <TabsContent value="music">
-          <EventList filter="music" />
-        </TabsContent>
-        <TabsContent value="art">
-          <EventList filter="art" />
+          
         </TabsContent>
       </Tabs>
     </div>

@@ -1,4 +1,8 @@
+"use client";
+
+import useAxios from "@/hooks/useAxios";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import { useState } from "react";
 
 interface TransactionPayload {
@@ -14,30 +18,38 @@ interface TransactionPayload {
 export default function useTransaction() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { axiosInstance } = useAxios(); // ✅ Gunakan useAxios seperti useCreateEvent
   const router = useRouter();
 
-  const createTransaction = async (payload: TransactionPayload) => {
+  const createTransaction = async (payload: TransactionPayload): Promise<number | null> => {
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch("/api/transaction/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      // Kirim request ke backend
+      const res = await axiosInstance.post("/transactions/create", payload);
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Gagal membuat transaksi");
+      if (res.status !== 200) {
+        throw new Error("Gagal membuat transaksi");
       }
 
-      const result = await res.json();
-      router.push("/transactions/create"); // Ganti dengan path tujuanmu
+      // Kembalikan ID transaksi untuk redirect
+      return res.data.data.id;
     } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan");
+      console.error("Checkout gagal:", err);
+
+      // Tangani error dari API
+      const errorMessage =
+        err.response?.data?.message || "Terjadi kesalahan saat checkout.";
+
+      if (err.response?.status === 401) {
+        toast.error("Anda harus login untuk melakukan transaksi.");
+      } else {
+        toast.error(errorMessage);
+      }
+
+      setError(errorMessage);
+      return null;
     } finally {
       setLoading(false);
     }
