@@ -31,7 +31,7 @@ const useCreateOrganizer = () => {
     onSuccess: async () => {
       toast.success("Your application has been sent");
       await queryClient.invalidateQueries({ queryKey: ["profiles"] });
-      router.refresh();
+      router.push("/profile");
     },
     onError: (error: AxiosError<any>) => {
       toast.error(error.response?.data.message || error.response?.data);

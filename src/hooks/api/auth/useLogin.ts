@@ -26,7 +26,9 @@ const useLogin = () => {
         token: data.token,
         redirect: false,
       });
-      if (data.role === "ORGANIZER") {
+      if (data.role === "ADMIN") {
+        router.replace("/dashboard/admin");
+      } else if (data.role === "ORGANIZER") {
         router.replace("/dashboard");
       } else {
         router.replace("/");

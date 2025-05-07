@@ -9,6 +9,7 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const user = data?.user;
   const isOrganizer = user?.role === "ORGANIZER";
+  const isAdmin = user?.role === "ADMIN";
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleDropdown = () => {
@@ -82,6 +83,16 @@ export default function Navbar() {
                           <li className="hover:bg-gray-100">
                             <Link
                               href="/dashboard"
+                              className="block px-4 py-2 text-sm text-gray-700"
+                            >
+                              Dashboard
+                            </Link>
+                          </li>
+                        )}
+                        {isAdmin && (
+                          <li className="hover:bg-gray-100">
+                            <Link
+                              href="/dashboard/admin"
                               className="block px-4 py-2 text-sm text-gray-700"
                             >
                               Dashboard
