@@ -1,20 +1,18 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { Calendar, Clock, MapPin, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Markdown from "@/components/MarkDown";
+import Navbar from "@/components/Navbar";
+import { TicketSelection } from "@/components/TicketSelection";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TicketSelection } from "@/components/TicketSelection";
-import { Event } from "@/types/event"; // Ensure to import Event interface
 import useGetEventBySlug from "@/hooks/api/event/useGetEventBySlug";
-import { FC, useEffect, useState } from "react";
-import { formatCurrency } from "@/lib/utils"; // Make sure this helper is imported for formatting
-import Markdown from "@/components/MarkDown";
-import { formatDate } from "date-fns";
+import { formatCurrency } from "@/lib/utils";
+import { Calendar, MapPin } from "lucide-react";
+import Image from "next/image";
+import { FC, useState } from "react";
 import ReviewForm from "./components/ReviewForm";
 import EventReviewList from "./components/ReviewList";
+import Footer from "@/components/Footer";
 
 interface EventDetail {
   slug: string;
@@ -23,21 +21,19 @@ interface EventDetail {
 const EventDetailPage: FC<EventDetail> = ({ slug }) => {
   const { data: event, isPending, error } = useGetEventBySlug(slug);
   const [canReview, setCanReview] = useState(false);
-  console.log(event);
- 
-  // Jika sedang loading, tampilkan loading
+
   if (isPending) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
 
-  // Jika ada error, tampilkan pesan error
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return <div className="flex justify-center items-center min-h-screen">Error: {error.message}</div>;
   }
 
   if (!event || !event.tickets) {
-    return <div>No event found!</div>;
+    return <div className="flex justify-center items-center min-h-screen">No event found!</div>;
   }
+  
   const tickets =
     event?.tickets.map((ticket) => ({
       id: ticket.id,
@@ -48,87 +44,56 @@ const EventDetailPage: FC<EventDetail> = ({ slug }) => {
 
   return (
     <div className="bg-background min-h-screen">
-      <div className="container px-4 py-6 md:px-6 md:py-8">
-        <Link
-          href="/explores"
-          className="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center text-sm font-medium"
-        >
-          <ArrowLeft className="mr-1 h-4 w-4" />
-          Back to Events
-        </Link>
-
-        <div className="grid gap-6 lg:grid-cols-3 lg:gap-12">
-          <div className="lg:col-span-2">
+      <Navbar />
+      <div className="container px-4 py-4 md:px-6 md:py-20 max-w-7xl mx-auto">
+        <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3 lg:gap-8">
+          {/* On mobile: Order summary first, then content */}
+          <div className="lg:col-span-2 lg:row-start-1 order-2 lg:order-1">
             <div className="overflow-hidden rounded-lg">
               <Image
                 src={event?.thumbnail || "/PlaceHolder.png"}
-                alt="placeholder"
+                alt={event?.name || "Event thumbnail"}
                 width={1000}
                 height={500}
-                className="w-full object-cover"
+                className="w-full object-cover aspect-video"
+                priority
               />
             </div>
 
-            <div className="mt-6">
-              <h1 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">
+            <div className="mt-4 md:mt-6">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight break-words">
                 {event?.name}
               </h1>
 
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge>{event?.category}</Badge>
-                <div className="text-muted-foreground flex items-center text-sm">
-                  <MapPin className="mr-1 h-4 w-4" />
-                  <span>{event?.location}</span>
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                <Badge className="text-xs md:text-sm">{event?.category}</Badge>
+                <div className="text-muted-foreground flex items-center text-xs md:text-sm">
+                  <MapPin className="mr-1 h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+                  <span className="line-clamp-1">{event?.location}</span>
                 </div>
-                <div className="text-muted-foreground mt-2 flex items-center text-sm">
-                  <Calendar className="mr-1 h-4 w-4" />
+                <div className="text-muted-foreground flex items-center text-xs md:text-sm">
+                  <Calendar className="mr-1 h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+                  <span>{event?.startDate}</span>
                 </div>
               </div>
 
-              <Tabs defaultValue="details" className="mt-6">
-                <TabsList className="grid w-full grid-cols-3">
+              <Tabs defaultValue="details" className="mt-4 md:mt-6">
+                <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="details">Details</TabsTrigger>
-
-                  <TabsTrigger value="reviews">Review</TabsTrigger>
+                  <TabsTrigger value="reviews">Reviews</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="details" className="mt-4 space-y-4">
-                  <Markdown content={event?.description || ""} />
-                </TabsContent>
-
-                <TabsContent value="tickets" className="mt-4 space-y-4">
-                  <h3 className="text-lg font-bold">Ticket Types</h3>
-                  {tickets.map((ticket, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between border-b py-2"
-                    >
-                      <div>
-                        <p className="font-medium">{ticket.type}</p>
-                        <p className="text-muted-foreground text-sm">
-                          {formatCurrency(ticket.price)} per ticket
-                        </p>
-                      </div>
-                      <input
-                        type="number"
-                        min="1"
-                        max={ticket.totalSeat}
-                        placeholder="Qty"
-                        className="w-16 rounded-md border p-1"
-                      />
-                    </div>
-                  ))}
+                  <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none">
+                    <Markdown content={event?.description || ""} />
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="reviews" className="mt-4">
-                  <ReviewForm eventId={event.id} />
                   {canReview && <ReviewForm eventId={event.id} />}
 
-                  {/* Daftar Review */}
-                  <section>
-                    <h2 className="mb-4 text-xl font-semibold">
-                      Ulasan Pengunjung
-                    </h2>
+                  <section className="mt-4">
+                    <h2 className="mb-4 text-xl font-semibold">Visitor Reviews</h2>
                     <EventReviewList eventId={event.id} />
                   </section>
                 </TabsContent>
@@ -136,8 +101,9 @@ const EventDetailPage: FC<EventDetail> = ({ slug }) => {
             </div>
           </div>
 
-          <div className="lg:row-start-1">
-            <div className="bg-card sticky top-20 rounded-lg border p-4 shadow-sm">
+          {/* On mobile: Display this at the top */}
+          <div className="order-1 lg:order-2 lg:row-start-1">
+            <div className="bg-card rounded-lg border p-4 shadow-sm lg:sticky lg:top-20">
               <div className="mb-4 flex items-center justify-between">
                 <h4 className="text-lg font-medium">Order Summary</h4>
               </div>
@@ -145,7 +111,7 @@ const EventDetailPage: FC<EventDetail> = ({ slug }) => {
               <TicketSelection tickets={tickets} />
 
               <div className="bg-muted mt-4 rounded-md p-3">
-                <h4 className="font-medium">Event Policies</h4>
+                <h4 className="font-medium text-sm md:text-base">Event Policies</h4>
                 <ul className="text-muted-foreground mt-2 space-y-1 text-xs">
                   <li>• Tickets are non-refundable</li>
                   <li>• Valid ID required for entry</li>
@@ -156,6 +122,7 @@ const EventDetailPage: FC<EventDetail> = ({ slug }) => {
           </div>
         </div>
       </div>
+      <Footer/>
     </div>
   );
 };
