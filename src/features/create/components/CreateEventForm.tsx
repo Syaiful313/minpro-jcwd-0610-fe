@@ -31,6 +31,7 @@ interface Voucher {
   discount: string;
   startDate: string;
   endDate: string;
+  maxUsage: string;
 }
 
 interface FormValues {
@@ -384,6 +385,16 @@ const CreateEventForm = () => {
               onChange={(e) => {
                 const newVouchers = [...formik.values.vouchers];
                 newVouchers[index].code = e.target.value;
+                formik.setFieldValue("vouchers", newVouchers);
+              }}
+            />
+            <Input
+              type="text"
+              placeholder="Max Usage"
+              value={voucher.maxUsage}
+              onChange={(e) => {
+                const newVouchers = [...formik.values.vouchers];
+                newVouchers[index].maxUsage = e.target.value;
                 formik.setFieldValue("vouchers", newVouchers);
               }}
             />

@@ -9,10 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TicketSelection } from "@/components/TicketSelection";
 import { Event } from "@/types/event"; // Ensure to import Event interface
 import useGetEventBySlug from "@/hooks/api/event/useGetEventBySlug";
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { formatCurrency } from "@/lib/utils"; // Make sure this helper is imported for formatting
 import Markdown from "@/components/MarkDown";
 import { formatDate } from "date-fns";
+import ReviewForm from "./components/ReviewForm";
+import EventReviewList from "./components/ReviewList";
 
 interface EventDetail {
   slug: string;
@@ -20,8 +22,9 @@ interface EventDetail {
 
 const EventDetailPage: FC<EventDetail> = ({ slug }) => {
   const { data: event, isPending, error } = useGetEventBySlug(slug);
+  const [canReview, setCanReview] = useState(false);
   console.log(event);
-
+ 
   // Jika sedang loading, tampilkan loading
   if (isPending) {
     return <div>Loading...</div>;
@@ -47,7 +50,7 @@ const EventDetailPage: FC<EventDetail> = ({ slug }) => {
     <div className="bg-background min-h-screen">
       <div className="container px-4 py-6 md:px-6 md:py-8">
         <Link
-          href="/browsers"
+          href="/explores"
           className="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center text-sm font-medium"
         >
           <ArrowLeft className="mr-1 h-4 w-4" />
@@ -85,8 +88,8 @@ const EventDetailPage: FC<EventDetail> = ({ slug }) => {
               <Tabs defaultValue="details" className="mt-6">
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="details">Details</TabsTrigger>
-                  <TabsTrigger value="tickets">Tickets</TabsTrigger>
-                  <TabsTrigger value="location">Location</TabsTrigger>
+
+                  <TabsTrigger value="reviews">Review</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="details" className="mt-4 space-y-4">
@@ -117,8 +120,17 @@ const EventDetailPage: FC<EventDetail> = ({ slug }) => {
                   ))}
                 </TabsContent>
 
-                <TabsContent value="location" className="mt-4">
-                  <p>{event?.location}</p>
+                <TabsContent value="reviews" className="mt-4">
+                  <ReviewForm eventId={event.id} />
+                  {canReview && <ReviewForm eventId={event.id} />}
+
+                  {/* Daftar Review */}
+                  <section>
+                    <h2 className="mb-4 text-xl font-semibold">
+                      Ulasan Pengunjung
+                    </h2>
+                    <EventReviewList eventId={event.id} />
+                  </section>
                 </TabsContent>
               </Tabs>
             </div>
@@ -131,13 +143,6 @@ const EventDetailPage: FC<EventDetail> = ({ slug }) => {
               </div>
 
               <TicketSelection tickets={tickets} />
-
-              <div className="mt-6 space-y-2">
-                <Button className="w-full">Buy Tickets</Button>
-                <Button variant="outline" className="w-full">
-                  Add to Wishlist
-                </Button>
-              </div>
 
               <div className="bg-muted mt-4 rounded-md p-3">
                 <h4 className="font-medium">Event Policies</h4>
